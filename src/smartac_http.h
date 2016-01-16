@@ -8,6 +8,6 @@
 #ifndef MARTAC_HTTP_H_
 #define MARTAC_HTTP_H_
 
-
+char *http_get(const int, const char *);
 
 #endif /* MARTAC_HTTP_H_ */

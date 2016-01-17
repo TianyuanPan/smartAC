@@ -5,9 +5,32 @@
  *      Author: TianyuanPan
  */
 
-#ifndef SMART_DO_COMMAND_H_
-#define SMART_DO_COMMAND_H_
+#ifndef SMARTAC_DO_COMMAND_H_
+#define SMARTAC_DO_COMMAND_H_
+
+#define  PREFIX "/tmp/.acexcuteresultdir/"
+
+typedef  struct {
+	char name[1024];
+	FILE *fp;
+}FILE_T;
+
+
+FILE_T * excute_open(const char *command, const char *mode);
+
+
+size_t excute_read(void *ptr, size_t size, size_t nmemb, FILE_T *stream);
+
+
+size_t excute_write(void *ptr, size_t size, size_t nmemb, FILE_T *stream);
+
+
+int excute_close(FILE_T *pft);
 
 
 
-#endif /* SMART_DO_COMMAND_H_ */
+int init_excute_outdir();
+
+
+
+#endif /* SMARTAC_DO_COMMAND_H_ */

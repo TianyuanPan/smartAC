@@ -1,13 +1,14 @@
 /*
- * smart_post_result.h
+ * smartac_post_result.h
  *
  *  Created on: Jan 15, 2016
  *      Author: TianyuanPan
  */
 
-#ifndef SMART_POST_RESULT_H_
-#define SMART_POST_RESULT_H_
+#ifndef SMARTAC_POST_RESULT_H_
+#define SMARTAC_POST_RESULT_H_
 
+/** @brief Handle a web request */
+void thread_post_result(void *args);
 
-
-#endif /* SMART_POST_RESULT_H_ */
+#endif /* SMARTAC_POST_RESULT_H_ */

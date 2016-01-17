@@ -15,6 +15,9 @@
 int execute(const char *, int);
 
 
+/** @brief Thread safe gethostbyname */
+struct in_addr *wd_gethostbyname(const char *);
+
 /**
  * Structure to represent a pascal-like string.
  */

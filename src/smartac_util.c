@@ -14,6 +14,15 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+
+#include <net/if.h>
+
+#include <fcntl.h>
+#include <string.h>
+#include <netdb.h>
 
 #include "smartac_util.h"
 #include "smartac_debug.h"
@@ -22,6 +31,55 @@
 
 
 #define WD_SHELL_PATH "/bin/sh"
+
+
+
+#define LOCK_GHBN() do { \
+	debug(LOG_DEBUG, "Locking wd_gethostbyname()"); \
+	pthread_mutex_lock(&ghbn_mutex); \
+	debug(LOG_DEBUG, "wd_gethostbyname() locked"); \
+} while (0)
+
+#define UNLOCK_GHBN() do { \
+	debug(LOG_DEBUG, "Unlocking wd_gethostbyname()"); \
+	pthread_mutex_unlock(&ghbn_mutex); \
+	debug(LOG_DEBUG, "wd_gethostbyname() unlocked"); \
+} while (0)
+
+
+/** @brief Mutex to protect gethostbyname since not reentrant */
+static pthread_mutex_t ghbn_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+
+struct in_addr *
+wd_gethostbyname(const char *name)
+{
+    struct hostent *he = NULL;
+    struct in_addr *addr = NULL;
+    struct in_addr *in_addr_temp = NULL;
+
+    /* XXX Calling function is reponsible for free() */
+
+    addr = safe_malloc(sizeof(*addr));
+
+    LOCK_GHBN();
+
+    he = gethostbyname(name);
+
+    if (he == NULL) {
+        free(addr);
+        UNLOCK_GHBN();
+        return NULL;
+    }
+
+    in_addr_temp = (struct in_addr *)he->h_addr_list[0];
+    addr->s_addr = in_addr_temp->s_addr;
+
+    UNLOCK_GHBN();
+
+    return addr;
+}
 
 
 /**

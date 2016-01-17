@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -127,7 +128,7 @@ get_iface_mac(const char *ifname)
 {
     int r, s;
     struct ifreq ifr;
-    char *hwaddr, mac[13];
+    char *hwaddr, mac[18];
 
     strncpy(ifr.ifr_name, ifname, 15);
     ifr.ifr_name[15] = '\0';
@@ -147,7 +148,7 @@ get_iface_mac(const char *ifname)
 
     hwaddr = ifr.ifr_hwaddr.sa_data;
     close(s);
-    snprintf(mac, sizeof(mac), "%02X%02X%02X%02X%02X%02X",
+    snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X",
              hwaddr[0] & 0xFF,
              hwaddr[1] & 0xFF, hwaddr[2] & 0xFF, hwaddr[3] & 0xFF, hwaddr[4] & 0xFF, hwaddr[5] & 0xFF);
 
@@ -212,6 +213,20 @@ get_ext_iface(void)
     return NULL;
 }
 
+
+
+int  get_file_length(const char *filename)
+{
+	struct stat statbuf;
+	int data_size = 0;
+
+    if (stat(filename,&statbuf) == 0){
+         data_size = statbuf.st_size;
+         return data_size;
+    }
+
+    return -1;
+}
 
 /**
  *

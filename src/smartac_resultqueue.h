@@ -9,37 +9,54 @@
 #define SMARTAC_RESULTQUEUE_H_
 
 
+#define LOCK_QUEUE() do { \
+	debug(LOG_DEBUG, "Locking queue"); \
+	pthread_mutex_lock(&queue_mutex); \
+	debug(LOG_DEBUG, "Queue locked"); \
+} while (0)
+
+
+#define UNLOCK_QUEUE() do { \
+	debug(LOG_DEBUG, "Unlocking queue"); \
+	pthread_mutex_unlock(&queue_mutex); \
+	debug(LOG_DEBUG, "Queue unlocked"); \
+} while (0)
+
+
+
 typedef struct _result_queue t_queue;
 
 typedef struct _result_data t_result;
 
 struct _result_data{
-	void *data;
+	void *result;
 	int   size;
 	int   c_size;
 };
 
-struct QNode{
-	t_result data;
-	struct QNode *netx;
-};
+typedef struct QNode{
+	t_result *data;
+	struct QNode *next;
+}QNode, *QueuePtr;
 
 struct _result_queue{
-	struct QNode *front;
-	struct QNode *rear;
+	QNode *front;
+	QNode *rear;
 };
 
-t_result *cmdresutl_malloc(int size);
 
-void cmdresutl_free(t_result *result);
+t_result *cmdresult_malloc(int size);
+
+void cmdresult_free(t_result *result);
 
 int initial_queue(t_queue *queue);
 
 int destroy_queue(t_queue *queue);
 
-int get_queue_head(t_queue *queue, t_result *elem);
+t_result * getout_queue(t_queue *queue);
 
-int insert_queue_tail(t_queue *queue, t_result *elem);
+int insert_queue(t_queue *queue, t_result *elem);
+
 
 
 

@@ -26,9 +26,12 @@
 #include "smartac_config.h"
 #include "smartac_debug.h"
 #include "smartac_ping.h"
+#include "smartac_resultqueue.h"
 
 #include "smartac.h"
 
+
+t_queue cmdres_queue;
 
 static pthread_t tid_ping = 0;
 
@@ -87,6 +90,8 @@ termination_handler(int s)
         debug(LOG_INFO, "Explicitly killing the ping thread");
         pthread_kill(tid_ping, SIGKILL);
     }
+
+    destroy_queue(&cmdres_queue);
 
     debug(LOG_NOTICE, "Exiting...");
     exit(s == 0 ? 1 : 0);
@@ -157,6 +162,8 @@ static void  main_loop(void)
 	s_config *config = config_get_config();
 	void **params;
 
+	t_result *cmdres = NULL;
+
     /* Set the time when AC started */
     if (!started_time) {
         debug(LOG_INFO, "Setting started_time");
@@ -188,13 +195,17 @@ static void  main_loop(void)
 
     /* If we don't have the Gateway ID, construct it from the internal MAC address.
      * "Can't fail" so exit() if the impossible happens. */
-    if (!config->gw_ac_id) {
+    if (!config->gw_ac_mac_address) {
         debug(LOG_DEBUG, "Finding MAC address of: %s", config->gw_ac_interface);
-        if ((config->gw_ac_id = get_iface_mac(config->gw_ac_interface)) == NULL) {
+        if ((config->gw_ac_mac_address = get_iface_mac(config->gw_ac_interface)) == NULL) {
             debug(LOG_ERR, "Could not get MAC address information of: %s, exiting...", config->gw_ac_interface);
             exit(1);
         }
-        debug(LOG_DEBUG, "%s = %s", config->gw_ac_interface, config->gw_ac_id);
+        debug(LOG_DEBUG, "Get Interface %s MAC addr %s", config->gw_ac_interface, config->gw_ac_mac_address);
+        if(!config->gw_ac_id){
+        	config->gw_ac_id = safe_strdup(config->gw_ac_mac_address);
+            debug(LOG_DEBUG, "%s = %s", config->gw_ac_id, config->gw_ac_mac_address);
+        }
     }
 
 	/* set excute out dir */
@@ -203,8 +214,18 @@ static void  main_loop(void)
 		exit(1);
 	}
 
+//    /* Init the command excute result queue, can't fail. */
+//    if((cmdres_queue = safe_malloc(sizeof(t_queue))) == NULL){
+//		debug(LOG_ERR, "FATAL: Failed to initalize command excute out queue.");
+//		exit(1);
+//    }
+
+	initial_queue(&cmdres_queue);
+
     /* Init the signals to catch chld/quit/etc */
     init_signals();
+
+
 
     /* Start heartbeat thread */
     result = pthread_create(&tid_ping, NULL, (void *)thread_ping, NULL);
@@ -216,11 +237,19 @@ static void  main_loop(void)
 
     while(1){
 
+    	cmdres = getout_queue(&cmdres_queue);
 
-   printf("==================================\n"
-		  "  main_loop:  I am here !!!!!!!!!!\n"
-		  "==================================\n");
-      //thread_ping(NULL);
+
+    	if (cmdres){
+             printf("==================================\n"
+		            "  main_loop:  I am here !!!!!!!!!!\n"
+		            "==================================\n");
+             printf("=== cmdres: %s \n===\n===\n", (char*)cmdres->result);
+             cmdresult_free(cmdres);
+    	}
+
+    	cmdres = NULL;
+
       sleep(2);
     }
 }

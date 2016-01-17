@@ -37,8 +37,12 @@ FILE_T * excute_open(const char *command, const char *mode)
 
 
 	sprintf(pft->name, "%sdocmdout_%u", PREFIX, rand_n);
-
+char *pp = strstr(command, "\n");
+*pp = 0;
 	sprintf(cmd_line, "%s > %s", command, pft->name);
+
+	printf("===\n cmd_line: %s\n===\n", cmd_line);
+
 	if (execute(cmd_line, 1) != 0){
 		free(pft);
 		return NULL;

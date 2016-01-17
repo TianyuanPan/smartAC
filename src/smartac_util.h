@@ -37,6 +37,10 @@ char *get_iface_mac(const char *);
 /** @brief Get interface name of default gateway */
 char *get_ext_iface(void);
 
+
+/** @brief Get a file contents length */
+int  get_file_length(const char *filename);
+
 /**
  * Structure to represent a pascal-like string.
  */

@@ -9,11 +9,11 @@
 #define SMARTAC_COMMON_H_
 
 /** @brief Read buffer for socket read? */
-#define        MAX_BUF            4096
+#define        MAX_BUF            40960
 
 #define        MAX_CMD_BUF        1024
 
-#define        MAX_CMD_OUT_BUF    2048
+#define        MAX_CMD_OUT_BUF    20480
 
 #define        MAX_CMDID_LEN      64
 

@@ -59,8 +59,8 @@ void thread_post_result(void *args)
         return;
     }
 
-    snprintf(data, result->size - 1, "%s", result->data);
-    cmdresutl_free(result);
+    snprintf(data, result->size - 1, "%s", result->result);
+    cmdresult_free(result);
 
     /*
      * Prep & send request

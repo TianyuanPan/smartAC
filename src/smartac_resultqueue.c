@@ -5,86 +5,35 @@
  *      Author: TianyuanPan
  */
 
+#include <pthread.h>
+#include <syslog.h>
 
 #include "smartac_safe.h"
+#include "smartac_debug.h"
 #include "smartac_common.h"
 #include "smartac_resultqueue.h"
 
 
-int initial_queue(t_queue *queue)
+
+pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void cmdresult_free(t_result *result)
 {
-	queue->front = queue->rear = (struct QNode *)safe_malloc(sizeof(struct QNode));
-	if(!queue->front)
-		return -1;
-	queue->front->netx = NULL;
-	return 0;
-}
-
-
-
-int destroy_queue(t_queue *queue)
-{
-	while (queue->front){
-		queue->rear = queue->front->netx;
-		free(queue->front);
-		queue->front = queue->rear;
-	}
-	return 0;
-}
-
-
-int  get_queue_head(t_queue *queue, t_result *elem)
-{
-	struct QNode *p;
-
-	if (queue->front == queue->rear)
-		return -1;
-	p = queue->front->netx;
-	if(elem)
-	    *elem = p->data;
-	queue->front->netx = p->netx;
-	if (queue->rear == p)
-		queue->rear = queue->front;
-
-	free(p);
-
-	return 0;
-}
-
-
-
-int insert_queue_tail(t_queue *queue, t_result *elem)
-{
-	struct QNode *p;
-	p = (struct QNode *)safe_malloc(sizeof(struct QNode));
-	if(!p)
-		return -1;
-	p->data = *elem;
-	p->netx = NULL;
-	queue->rear->netx = p;
-	queue->rear = p;
-	return 0;
-}
-
-
-
-void cmdresutl_free(t_result *result)
-{
-	free(result->data);
+	free(result->result);
 	free(result);
 }
 
 
-t_result *cmdresutl_malloc(int buf_size)
+t_result *cmdresult_malloc(int buf_size)
 {
 	t_result *buf = NULL;
 	buf = (t_result *)safe_malloc(sizeof(t_result));
 	if(!buf)
 		return NULL;
-	if(buf_size > MAX_CMD_OUT_BUF)
-		buf_size = MAX_CMD_OUT_BUF;
-	buf->data = safe_malloc(buf_size * sizeof(char));
-	if(!buf->data){
+	if(buf_size > MAX_CMD_OUT_BUF + 1)
+		buf_size = MAX_CMD_OUT_BUF + 1;
+	buf->result = safe_malloc(++buf_size * sizeof(char));
+	if(!buf->result){
 		free(buf);
 		return NULL;
 	}
@@ -92,3 +41,96 @@ t_result *cmdresutl_malloc(int buf_size)
 	buf->c_size = 0;
 	return buf;
 }
+
+
+
+int initial_queue(t_queue *queue)
+{
+	LOCK_QUEUE();
+
+	QueuePtr p;
+	p = (QueuePtr)safe_malloc(sizeof(QNode));
+	if(!p)
+		return -1;
+	queue->front = p;
+	queue->rear = p;
+
+	queue->front-> next = NULL;
+	queue->rear->next = NULL;//FIX ME?
+
+	UNLOCK_QUEUE();
+	return 0;
+}
+
+
+
+int destroy_queue(t_queue *queue)
+{
+	LOCK_QUEUE();
+	while (queue->front){
+		queue->rear = queue->front->next;
+
+		cmdresult_free(queue->front->data);
+
+		free(queue->front);
+		queue->front = queue->rear;
+	}
+	UNLOCK_QUEUE();
+	return 0;
+}
+
+
+t_result *getout_queue(t_queue *queue)
+{
+	QNode *p;
+	t_result *res;
+
+	LOCK_QUEUE();
+	if (queue->front == queue->rear){
+		UNLOCK_QUEUE();
+		return NULL;
+	}
+
+	p = queue->front->next;
+
+	res = cmdresult_malloc(p->data->size);
+	if(!res){
+		UNLOCK_QUEUE();
+		return NULL;
+	}
+	memcpy(res->result, p->data->result, p->data->size);
+	res->c_size = p->data->c_size;
+
+	queue->front->next = p->next;
+	if (queue->rear == p)
+		queue->rear = queue->front;
+
+	cmdresult_free(p->data);
+	free(p);
+	UNLOCK_QUEUE();
+	return res;
+}
+
+
+
+int insert_queue(t_queue *queue, t_result *elem)
+{
+	QNode *p;
+	p = (QueuePtr)safe_malloc(sizeof(QNode));
+	if(!p)
+		return -1;
+	p->data = elem;
+	p->next = NULL;
+
+	LOCK_QUEUE();
+
+	queue->rear->next = p;
+	queue->rear = p;
+
+	UNLOCK_QUEUE();
+
+	return 0;
+}
+
+
+

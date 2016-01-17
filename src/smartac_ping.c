@@ -27,6 +27,7 @@
 
 #include "smartac_ping.h"
 
+
 static void ping(void);
 
 /** Launches a thread that periodically checks in with the wifidog auth server to perform heartbeat function.
@@ -152,33 +153,32 @@ static void  ping(void)
         return;
     }
 
-//    if (strstr(res, "Pong") == 0) {
-//        debug(LOG_WARNING, "AC server did NOT say Pong!");
-//        free(res);
-//        return;
-//    } else {
+    if (strstr(res, "Pong") == 0) {
+        debug(LOG_WARNING, "AC server did NOT say Pong!");
+        free(res);
+        return;
+    }
+     /**
+	  * Now,do the remote command business.
+	  * */
+	cmdptr = strstr(res,"|");
 
-		/**
-		 * Now,do the remote command business.
-		 * */
-//		cmdptr = strstr(res,"|");
-//
-//		if(NULL == cmdptr){
-//			debug(LOG_INFO,"[[<< ========= NO remote commands ========= >>]]");
-//		}else{
-//			cmdptr = get_remote_shell_command(++cmdptr);
-//			if(cmdptr){
-//				excute_remote_shell_command(config_get_config()->gw_ac_id,cmdptr);
-//			}
-//		}
-//		/**********************/
-printf("==============================================\n");
-printf("==============================================\n");
-printf("%s\n", res);
-printf("==============================================\n");
-printf("==============================================\n");
-		free(res);
-//    }
+	if (NULL == cmdptr){
+		debug(LOG_INFO,"[[<< ========= NO remote commands ========= >>]]");
+	}else{
+		cmdptr = get_remote_shell_command(++cmdptr);
+		if (cmdptr){
+			excute_remote_shell_command(config_get_config()->gw_ac_id, cmdptr);
+		}
+	}
+
+//    printf("==============================================\n");
+//    printf("==============================================\n");
+//    printf("%s\n", res);
+//    printf("==============================================\n");
+//    printf("==============================================\n");
+
+	free(res);
     return;
 }
 

@@ -25,6 +25,7 @@
 #include "smartac_commandline.h"
 #include "smartac_config.h"
 #include "smartac_debug.h"
+#include "smartac_ping.h"
 
 #include "smartac.h"
 
@@ -33,14 +34,195 @@ static pthread_t tid_ping = 0;
 
 time_t started_time = 0;
 
+
+
+
+/**@internal
+ * @brief Handles SIGCHLD signals to avoid zombie processes
+ *
+ * When a child process exits, it causes a SIGCHLD to be sent to the
+ * process. This handler catches it and reaps the child process so it
+ * can exit. Otherwise we'd get zombie processes.
+ */
+void
+sigchld_handler(int s)
+{
+    int status;
+    pid_t rc;
+
+    debug(LOG_DEBUG, "Handler for SIGCHLD called. Trying to reap a child");
+
+    rc = waitpid(-1, &status, WNOHANG);
+
+    debug(LOG_DEBUG, "Handler for SIGCHLD reaped child PID %d", rc);
+}
+
+
+/** Exits cleanly after cleaning up the firewall.
+ *  Use this function anytime you need to exit after firewall initialization.
+ *  @param s Integer that is really a boolean, true means voluntary exit, 0 means error.
+ */
+void
+termination_handler(int s)
+{
+    static pthread_mutex_t sigterm_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_t self = pthread_self();
+
+    debug(LOG_INFO, "Handler for termination caught signal %d", s);
+
+    /* Makes sure we only call fw_destroy() once. */
+    if (pthread_mutex_trylock(&sigterm_mutex)) {
+        debug(LOG_INFO, "Another thread already began global termination handler. I'm exiting");
+        pthread_exit(NULL);
+    } else {
+        debug(LOG_INFO, "Cleaning up and exiting");
+    }
+
+    /* XXX Hack
+     * Aparently pthread_cond_timedwait under openwrt prevents signals (and therefore
+     * termination handler) from happening so we need to explicitly kill the threads
+     * that use that
+     */
+    if (tid_ping && self != tid_ping) {
+        debug(LOG_INFO, "Explicitly killing the ping thread");
+        pthread_kill(tid_ping, SIGKILL);
+    }
+
+    debug(LOG_NOTICE, "Exiting...");
+    exit(s == 0 ? 1 : 0);
+}
+
+
+/** @internal
+ * Registers all the signal handlers
+ */
+static void
+init_signals(void)
+{
+    struct sigaction sa;
+
+    debug(LOG_DEBUG, "Initializing signal handlers");
+
+    sa.sa_handler = sigchld_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        debug(LOG_ERR, "sigaction(): %s", strerror(errno));
+        exit(1);
+    }
+
+    /* Trap SIGPIPE */
+    /* This is done so that when libhttpd does a socket operation on
+     * a disconnected socket (i.e.: Broken Pipes) we catch the signal
+     * and do nothing. The alternative is to exit. SIGPIPE are harmless
+     * if not desirable.
+     */
+    sa.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &sa, NULL) == -1) {
+        debug(LOG_ERR, "sigaction(): %s", strerror(errno));
+        exit(1);
+    }
+
+    sa.sa_handler = termination_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+
+    /* Trap SIGTERM */
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        debug(LOG_ERR, "sigaction(): %s", strerror(errno));
+        exit(1);
+    }
+
+    /* Trap SIGQUIT */
+    if (sigaction(SIGQUIT, &sa, NULL) == -1) {
+        debug(LOG_ERR, "sigaction(): %s", strerror(errno));
+        exit(1);
+    }
+
+    /* Trap SIGINT */
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        debug(LOG_ERR, "sigaction(): %s", strerror(errno));
+        exit(1);
+    }
+}
+
+
+
 /**@internal
  * Main execution loop
  */
 static void  main_loop(void)
 {
+	int result;
+	s_config *config = config_get_config();
+	void **params;
+
+    /* Set the time when AC started */
+    if (!started_time) {
+        debug(LOG_INFO, "Setting started_time");
+        started_time = time(NULL);
+    } else if (started_time < MINIMUM_STARTED_TIME) {
+        debug(LOG_WARNING, "Detected possible clock skew - re-setting started_time");
+        started_time = time(NULL);
+    }
+
+    /* if we don't have the Gateway internet interface, get it. Can't fail. */
+    if(!config->gw_ac_interface){
+        debug(LOG_DEBUG, "Finding Gateway external Interface ...");
+        if ((config->gw_ac_interface = get_ext_iface()) == NULL) {
+            debug(LOG_ERR, "Could not get Gateway Interface information, exiting...");
+            exit(1);
+        }
+        debug(LOG_DEBUG, "Get the GW Interface of:%s", config->gw_ac_interface);
+    }
+
+    /* If we don't have the Gateway IP address, get it. Can't fail. */
+    if (!config->gw_ac_ip_address) {
+        debug(LOG_DEBUG, "Finding IP address of: %s", config->gw_ac_interface);
+        if ((config->gw_ac_ip_address = get_iface_ip(config->gw_ac_interface)) == NULL) {
+            debug(LOG_ERR, "Could not get IP address information of: %s, exiting...", config->gw_ac_ip_address);
+            exit(1);
+        }
+        debug(LOG_DEBUG, "%s = %s", config->gw_ac_ip_address, config->gw_ac_ip_address);
+    }
+
+    /* If we don't have the Gateway ID, construct it from the internal MAC address.
+     * "Can't fail" so exit() if the impossible happens. */
+    if (!config->gw_ac_id) {
+        debug(LOG_DEBUG, "Finding MAC address of: %s", config->gw_ac_interface);
+        if ((config->gw_ac_id = get_iface_mac(config->gw_ac_interface)) == NULL) {
+            debug(LOG_ERR, "Could not get MAC address information of: %s, exiting...", config->gw_ac_interface);
+            exit(1);
+        }
+        debug(LOG_DEBUG, "%s = %s", config->gw_ac_interface, config->gw_ac_id);
+    }
+
+	/* set excute out dir */
+	if (init_excute_outdir() < 0){
+		debug(LOG_ERR, "FATAL: Failed to initalize excute out directory.");
+		exit(1);
+	}
+
+    /* Init the signals to catch chld/quit/etc */
+    init_signals();
+
+    /* Start heartbeat thread */
+    result = pthread_create(&tid_ping, NULL, (void *)thread_ping, NULL);
+    if (result != 0) {
+        debug(LOG_ERR, "FATAL: Failed to create a new thread (ping) - exiting");
+        termination_handler(0);
+    }
+    pthread_detach(tid_ping);
+
+    while(1){
+
+
    printf("==================================\n"
 		  "  main_loop:  I am here !!!!!!!!!!\n"
 		  "==================================\n");
+      //thread_ping(NULL);
+      sleep(2);
+    }
 }
 
 

@@ -43,6 +43,7 @@ static int missing_parms;
 typedef enum {
     oBadOption,
     oGwAcId,
+    oGwAcInterface,
     oDaemon,
     oDebugLevel,
     oArpTable,
@@ -68,6 +69,7 @@ static const struct {
     "Daemon", oDaemon}, {
     "DebugLevel", oDebugLevel}, {
     "GatewayAcId", oGwAcId}, {
+    "GatewayAcInterface",oGwAcInterface},{
     "ArpTablePath", oArpTable}, {
     "CheckInterval", oCheckInterval}, {
     "SyslogFacility", oSyslogFacility}, {
@@ -112,6 +114,9 @@ config_init(void)
     config.debuglevel = DEFAULT_DEBUGLEVEL;
     config.daemon = DEFAULT_DAEMON;
     config.gw_ac_id = NULL;
+    config.gw_ac_ip_address = NULL;
+    config.gw_ac_mac_address = NULL;
+    config.gw_ac_interface = NULL;//safe_strdup(DEFAULT_GW_AC_IFACE);
     config.syslog_facility = DEFAULT_SYSLOG_FACILITY;
 
     debugconf.log_stderr = 1;
@@ -372,6 +377,9 @@ config_read(const char *filename)
                     break;
                 case oGwAcId:
                     config.gw_ac_id = safe_strdup(p1);
+                    break;
+                case oGwAcInterface:
+                    config.gw_ac_interface = safe_strdup(p1);
                     break;
                 case oArpTable:
                 	config.arp_table_path = safe_strdup(p1);

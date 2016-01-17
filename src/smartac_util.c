@@ -13,7 +13,9 @@
 #include <errno.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <string.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
@@ -21,6 +23,11 @@
 #include <net/if.h>
 
 #include <fcntl.h>
+#include <net/ethernet.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
+#include <netpacket/packet.h>
+
 #include <string.h>
 #include <netdb.h>
 
@@ -79,6 +86,130 @@ wd_gethostbyname(const char *name)
     UNLOCK_GHBN();
 
     return addr;
+}
+
+
+char *
+get_iface_ip(const char *ifname)
+{
+    struct ifreq if_data;
+    struct in_addr in;
+    char *ip_str;
+    int sockd;
+    u_int32_t ip;
+
+    /* Create a socket */
+    if ((sockd = socket(AF_INET, SOCK_RAW, htons(0x8086))) < 0) {
+        debug(LOG_ERR, "socket(): %s", strerror(errno));
+        return NULL;
+    }
+
+    /* Get IP of internal interface */
+    strncpy(if_data.ifr_name, ifname, 15);
+    if_data.ifr_name[15] = '\0';
+
+    /* Get the IP address */
+    if (ioctl(sockd, SIOCGIFADDR, &if_data) < 0) {
+        debug(LOG_ERR, "ioctl(): SIOCGIFADDR %s", strerror(errno));
+        close(sockd);
+        return NULL;
+    }
+    memcpy((void *)&ip, (void *)&if_data.ifr_addr.sa_data + 2, 4);
+    in.s_addr = ip;
+
+    ip_str = inet_ntoa(in);
+    close(sockd);
+    return safe_strdup(ip_str);
+}
+
+char *
+get_iface_mac(const char *ifname)
+{
+    int r, s;
+    struct ifreq ifr;
+    char *hwaddr, mac[13];
+
+    strncpy(ifr.ifr_name, ifname, 15);
+    ifr.ifr_name[15] = '\0';
+
+    s = socket(AF_INET, SOCK_DGRAM, 0);
+    if (-1 == s) {
+        debug(LOG_ERR, "get_iface_mac socket: %s", strerror(errno));
+        return NULL;
+    }
+
+    r = ioctl(s, SIOCGIFHWADDR, &ifr);
+    if (r == -1) {
+        debug(LOG_ERR, "get_iface_mac ioctl(SIOCGIFHWADDR): %s", strerror(errno));
+        close(s);
+        return NULL;
+    }
+
+    hwaddr = ifr.ifr_hwaddr.sa_data;
+    close(s);
+    snprintf(mac, sizeof(mac), "%02X%02X%02X%02X%02X%02X",
+             hwaddr[0] & 0xFF,
+             hwaddr[1] & 0xFF, hwaddr[2] & 0xFF, hwaddr[3] & 0xFF, hwaddr[4] & 0xFF, hwaddr[5] & 0xFF);
+
+    return safe_strdup(mac);
+}
+
+
+char *
+get_ext_iface(void)
+{
+    FILE *input;
+    char *device, *gw;
+    int i = 1;
+    int keep_detecting = 1;
+    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_t cond_mutex = PTHREAD_MUTEX_INITIALIZER;
+    struct timespec timeout;
+    device = (char *)safe_malloc(16);   /* XXX Why 16? */
+    gw = (char *)safe_malloc(16);
+    debug(LOG_DEBUG, "get_ext_iface(): Autodectecting the external interface from routing table");
+    while (keep_detecting) {
+        input = fopen("/proc/net/route", "r");
+        if (NULL == input) {
+            debug(LOG_ERR, "Could not open /proc/net/route (%s).", strerror(errno));
+            free(gw);
+            free(device);
+            return NULL;
+        }
+        while (!feof(input)) {
+            /* XXX scanf(3) is unsafe, risks overrun */
+            if ((fscanf(input, "%15s %15s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n", device, gw) == 2)
+                && strcmp(gw, "00000000") == 0) {
+                free(gw);
+                debug(LOG_INFO, "get_ext_iface(): Detected %s as the default interface after trying %d", device, i);
+                fclose(input);
+                return device;
+            }
+        }
+        fclose(input);
+        debug(LOG_ERR,
+              "get_ext_iface(): Failed to detect the external interface after try %d (maybe the interface is not up yet?).  Retry limit: %d",
+              i, NUM_EXT_INTERFACE_DETECT_RETRY);
+        /* Sleep for EXT_INTERFACE_DETECT_RETRY_INTERVAL seconds */
+        timeout.tv_sec = time(NULL) + EXT_INTERFACE_DETECT_RETRY_INTERVAL;
+        timeout.tv_nsec = 0;
+        /* Mutex must be locked for pthread_cond_timedwait... */
+        pthread_mutex_lock(&cond_mutex);
+        /* Thread safe "sleep" */
+        pthread_cond_timedwait(&cond, &cond_mutex, &timeout);   /* XXX need to possibly add this thread to termination_handler */
+        /* No longer needs to be locked */
+        pthread_mutex_unlock(&cond_mutex);
+        //for (i=1; i<=NUM_EXT_INTERFACE_DETECT_RETRY; i++) {
+        if (NUM_EXT_INTERFACE_DETECT_RETRY != 0 && i > NUM_EXT_INTERFACE_DETECT_RETRY) {
+            keep_detecting = 0;
+        }
+        i++;
+    }
+    debug(LOG_ERR, "get_ext_iface(): Failed to detect the external interface after %d tries, aborting", i);
+    exit(1);                    /* XXX Should this be termination handler? */
+    free(device);
+    free(gw);
+    return NULL;
 }
 
 

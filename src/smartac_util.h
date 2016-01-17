@@ -11,12 +11,31 @@
 #include <stddef.h>
 #include <stdarg.h> /* For va_list */
 
+
+/** How many times should we try detecting the interface with the default route
+ * (in seconds).  If set to 0, it will keep retrying forever */
+#define NUM_EXT_INTERFACE_DETECT_RETRY 0
+/** How often should we try to detect the interface with the default route
+ *  if it isn't up yet (interval in seconds) */
+#define EXT_INTERFACE_DETECT_RETRY_INTERVAL 1
+
+
+
 /** @brief Execute a shell command */
 int execute(const char *, int);
 
 
 /** @brief Thread safe gethostbyname */
 struct in_addr *wd_gethostbyname(const char *);
+
+/** @brief Get IP address of an interface */
+char *get_iface_ip(const char *);
+
+/** @brief Get MAC address of an interface */
+char *get_iface_mac(const char *);
+
+/** @brief Get interface name of default gateway */
+char *get_ext_iface(void);
 
 /**
  * Structure to represent a pascal-like string.

@@ -40,10 +40,10 @@ int connect_ac_server()
 	;
 
 	if (sockfd == -1) {
-		debug(LOG_ERR, "Failed to connect to any of the auth servers");
+		debug(LOG_ERR, "Failed to connect to any of the AC servers");
 		//mark_auth_offline();
 	} else {
-		debug(LOG_DEBUG, "Connected to auth server");
+		debug(LOG_DEBUG, "Connected to AC server");
 		//mark_auth_online();
 	}
 	return (sockfd);
@@ -97,7 +97,7 @@ int _connect_ac_server(int level)
 	 */
 	ac_server = config->ac_servers;
 	hostname = ac_server->ac_server_hostname;
-	debug(LOG_DEBUG, "Level %d: Resolving auth server [%s]", level, hostname);
+	debug(LOG_DEBUG, "Level %d: Resolving AC server [%s]", level, hostname);
 	h_addr = wd_gethostbyname(hostname);
 	if (!h_addr) {
 		/*

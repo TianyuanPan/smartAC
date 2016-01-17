@@ -15,4 +15,8 @@ extern time_t started_time;
 /** @brief actual program entry point. */
 int smartac_main(int, char **);
 
+
+/** @brief exits cleanly */
+void termination_handler(int s);
+
 #endif /* SMARTAC_H_ */

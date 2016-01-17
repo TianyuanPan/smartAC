@@ -14,8 +14,9 @@
 
 #define  DEFAULT_ARP_TABLE         "/proc/net/arp"
 
-#define  DEFAULT_CONFIG_FILE       "/etc/smartac.conf"
+#define  DEFAULT_CONFIG_FILE       "/etc/wifismartac.conf"
 
+//#define  DEFAULT_GW_AC_IFACE       "eth0.1"
 
 #define  DEFAULT_DAEMON            1
 #define  DEFAULT_CHECK_INTERVAL    30
@@ -59,6 +60,9 @@ typedef struct {
     char *arp_table_path;     /**< @brief Path to custom ARP table, formatted
                                     like /proc/net/arp */
     char *gw_ac_id;
+    char *gw_ac_interface;
+    char *gw_ac_ip_address;
+    char *gw_ac_mac_address;
     int  daemon;
     int  debuglevel;
     int  syslog_facility;

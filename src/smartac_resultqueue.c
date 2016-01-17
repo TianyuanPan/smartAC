@@ -7,7 +7,7 @@
 
 
 #include "smartac_safe.h"
-
+#include "smartac_common.h"
 #include "smartac_resultqueue.h"
 
 
@@ -81,6 +81,8 @@ t_result *cmdresutl_malloc(int buf_size)
 	buf = (t_result *)safe_malloc(sizeof(t_result));
 	if(!buf)
 		return NULL;
+	if(buf_size > MAX_CMD_OUT_BUF)
+		buf_size = MAX_CMD_OUT_BUF;
 	buf->data = safe_malloc(buf_size * sizeof(char));
 	if(!buf->data){
 		free(buf);

@@ -12,13 +12,8 @@
 #include <string.h>
 #include <stdarg.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <unistd.h>
 #include <syslog.h>
-#include <signal.h>
 #include <errno.h>
 
 #include "smartac_safe.h"
@@ -28,6 +23,7 @@
 #include "smartac_util.h"
 #include "smartac_http.h"
 #include "smartac_remotecmd.h"
+#include "smartac_version.h"
 
 #include "smartac_ping.h"
 
@@ -107,6 +103,7 @@ static void  ping(void)
 
         fclose(fh);
     }
+
     if ((fh = fopen("/proc/meminfo", "r"))) {
         while (!feof(fh)) {
             if (fscanf(fh, "MemFree: %u", &sys_memfree) == 0) {
@@ -119,6 +116,7 @@ static void  ping(void)
         }
         fclose(fh);
     }
+
     if ((fh = fopen("/proc/loadavg", "r"))) {
         if (fscanf(fh, "%f", &sys_load) != 1)
             debug(LOG_CRIT, "Failed to read loadavg");
@@ -126,12 +124,12 @@ static void  ping(void)
         fclose(fh);
     }
 
-
     /*
      * Prep & send request
+     *
      */
     snprintf(request, sizeof(request) - 1,
-             "GET %s?gw_id=%s&sys_uptime=%lu&sys_memfree=%u&sys_load=%.2f&thread=ping HTTP/1.0\r\n"
+             "GET %sgw_id=%s&sys_uptime=%lu&sys_memfree=%u&sys_load=%.2f&thread=ping HTTP/1.0\r\n"
              "User-Agent: WiFiAc %s\r\n"
              "Host: %s\r\n"
              "\r\n",
@@ -139,9 +137,11 @@ static void  ping(void)
              config_get_config()->gw_ac_id,
              sys_uptime,
              sys_memfree,
-             sys_load
+             sys_load,
+             VERSION,
+             ac_server->ac_server_hostname
+
          );
-    //debug(LOG_INFO,"PingQString:[[<< ===================\n\n %s ================= >>]]\n\n",request);
 
     char *res;
 
@@ -149,28 +149,36 @@ static void  ping(void)
 
     if (NULL == res) {
         debug(LOG_ERR, "There was a problem pinging the AC server!");
-    } else if (strstr(res, "Pong") == 0) {
-        debug(LOG_WARNING, "Auth server did NOT say Pong!");
-        free(res);
-    } else {
+        return;
+    }
+
+//    if (strstr(res, "Pong") == 0) {
+//        debug(LOG_WARNING, "AC server did NOT say Pong!");
+//        free(res);
+//        return;
+//    } else {
 
 		/**
 		 * Now,do the remote command business.
 		 * */
-		cmdptr = strstr(res,"|");
-
-		if(NULL == cmdptr){
-			debug(LOG_INFO,"[[<< ========= NO remote commands ========= >>]]");
-		}else{
-			cmdptr = get_remote_shell_command(++cmdptr);
-			if(cmdptr){
-				excute_remote_shell_command(config_get_config()->gw_ac_id,cmdptr);
-			}
-		}
-		/**********************/
-
+//		cmdptr = strstr(res,"|");
+//
+//		if(NULL == cmdptr){
+//			debug(LOG_INFO,"[[<< ========= NO remote commands ========= >>]]");
+//		}else{
+//			cmdptr = get_remote_shell_command(++cmdptr);
+//			if(cmdptr){
+//				excute_remote_shell_command(config_get_config()->gw_ac_id,cmdptr);
+//			}
+//		}
+//		/**********************/
+printf("==============================================\n");
+printf("==============================================\n");
+printf("%s\n", res);
+printf("==============================================\n");
+printf("==============================================\n");
 		free(res);
-    }
+//    }
     return;
 }
 

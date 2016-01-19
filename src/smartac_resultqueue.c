@@ -39,6 +39,7 @@ t_result *cmdresult_malloc(int buf_size)
 	}
 	buf->size = buf_size;
 	buf->c_size = 0;
+	memset(buf->result, 0, buf->size);
 	return buf;
 }
 

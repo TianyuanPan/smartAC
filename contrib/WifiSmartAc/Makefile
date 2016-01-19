@@ -27,6 +27,7 @@ define Package/WifiSmartAc/conffiles
 /etc/smartac.conf
 endef
 define Package/WifiSmartAc/install
+
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wifiSmartAc $(1)/usr/bin	
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_common $(1)/usr/bin
@@ -41,6 +42,10 @@ define Package/WifiSmartAc/install
 	
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/wifismartac.conf $(1)/etc/wifismartac.conf
+	
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/init/wifiSmartAc.init  $(1)/etc/init.d/wifiSmartAc
+	
 endef
 $(eval $(call BuildPackage,WifiSmartAc))
 

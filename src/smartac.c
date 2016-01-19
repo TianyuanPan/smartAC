@@ -26,6 +26,7 @@
 #include "smartac_config.h"
 #include "smartac_debug.h"
 #include "smartac_ping.h"
+#include "smartac_post_result.h"
 #include "smartac_resultqueue.h"
 
 #include "smartac.h"
@@ -47,8 +48,7 @@ time_t started_time = 0;
  * process. This handler catches it and reaps the child process so it
  * can exit. Otherwise we'd get zombie processes.
  */
-void
-sigchld_handler(int s)
+void sigchld_handler(int s)
 {
     int status;
     pid_t rc;
@@ -65,8 +65,7 @@ sigchld_handler(int s)
  *  Use this function anytime you need to exit after firewall initialization.
  *  @param s Integer that is really a boolean, true means voluntary exit, 0 means error.
  */
-void
-termination_handler(int s)
+void termination_handler(int s)
 {
     static pthread_mutex_t sigterm_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_t self = pthread_self();
@@ -101,8 +100,7 @@ termination_handler(int s)
 /** @internal
  * Registers all the signal handlers
  */
-static void
-init_signals(void)
+static void init_signals(void)
 {
     struct sigaction sa;
 
@@ -159,6 +157,7 @@ init_signals(void)
 static void  main_loop(void)
 {
 	int result;
+	pthread_t tid_post;
 	s_config *config = config_get_config();
 	void **params;
 
@@ -214,12 +213,6 @@ static void  main_loop(void)
 		exit(1);
 	}
 
-//    /* Init the command excute result queue, can't fail. */
-//    if((cmdres_queue = safe_malloc(sizeof(t_queue))) == NULL){
-//		debug(LOG_ERR, "FATAL: Failed to initalize command excute out queue.");
-//		exit(1);
-//    }
-
 	initial_queue(&cmdrets_queue);
 
     /* Init the signals to catch chld/quit/etc */
@@ -239,18 +232,15 @@ static void  main_loop(void)
 
     	cmdrets = getout_queue(&cmdrets_queue);
 
-
     	if (cmdrets){
-             printf("==================================\n"
-		            "  main_loop:  I am here !!!!!!!!!!\n"
-		            "==================================\n");
-             printf("=== cmdrets:\n%s \n===\n===\n", (char*)cmdrets->result);
-             cmdresult_free(cmdrets);
+           if (pthread_create(&tid_post, NULL, (void *)thread_post_result, cmdrets) != 0)
+                debug(LOG_WARNING, "FATAL: Failed to create a new thread_post_result - exiting");
+                 //termination_handler(0);
+           else
+            	pthread_detach(tid_post);
     	}
 
-    	cmdrets = NULL;
-
-      sleep(2);
+       sleep(2);
     }
 }
 
@@ -303,3 +293,5 @@ int smartac_main(int argc, char **argv)
 
 	return (0);
 }
+
+

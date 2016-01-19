@@ -31,7 +31,8 @@
 void thread_post_result(void *args)
 {
     char request[MAX_BUF],
-         data[MAX_CMD_OUT_BUF];
+         data[MAX_CMD_OUT_BUF],
+         *retptr;
     int data_len;
 
     int sockfd;
@@ -49,8 +50,7 @@ void thread_post_result(void *args)
     result = (t_result*)args;
 
 
-    snprintf(data, result->size - 1, "%s", result->result);
-    cmdresult_free(result);
+    memcpy(data, result->result, result->size);
 
     /*
      * Prep & send request
@@ -59,15 +59,23 @@ void thread_post_result(void *args)
     snprintf(request, sizeof(request) - 1,
              "POST %s HTTP/1.0\r\n"
              "User-Agent: WiFiAc %s\r\n"
+    		 "Content-Type: application/json\r\n"
+    		 "Content-Length: %d\r\n"
+    		 "Connection: close\r\n"
              "Host: %s\r\n"
              "\r\n"
     		 "%s",
-             ac_server->ac_server_ping_path,
+             ac_server->ac_server_result_path,
              VERSION,
+             result->c_size,
              ac_server->ac_server_hostname,
              data
          );
 
+    cmdresult_free(result);
+    result = NULL;
+
+    debug(LOG_DEBUG,"\n=== post request: ===\n%s===", request);
     /*
      * The ping thread does not really try to see if the auth server is actually
      * working. Merely that there is a web server listening at the port. And that
@@ -78,6 +86,7 @@ void thread_post_result(void *args)
         /*
          * No AC servers for me to talk to
          */
+    	debug(LOG_ERR, "No AC servers for me to talk to!");
         return;
     }
 
@@ -86,10 +95,20 @@ void thread_post_result(void *args)
     res = http_get(sockfd, request);
 
     if (NULL == res) {
-        debug(LOG_ERR, "There was a problem posting result the AC server!");
+        debug(LOG_ERR, "There was a problem posting result to the AC server!");
         return;
     }
+
+    retptr = strstr(res, "Success");
+
+    if(!retptr)
+    	debug(LOG_ERR, "AC response is NOT Success !");
+
+    //debug(LOG_DEBUG, "AC response  Success !");
+
 	free(res);
 
 	return;
 }
+
+

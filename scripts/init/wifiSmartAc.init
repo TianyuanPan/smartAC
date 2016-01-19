@@ -8,12 +8,12 @@ STOP=60
 
 start()
 {
-  /usr/sbin/WifiSmartAc &
+  /usr/bin/wifiSmartAc.sh &
 }
 
 stop()
 {
-  rst=`ps | grep WifiSmartAc | cut -d "r" -f 1`
+  rst=`ps | grep wifiSmartAc | cut -d "r" -f 1`
   if [ -n "$rst" ]
    then
     kill -9 $rst

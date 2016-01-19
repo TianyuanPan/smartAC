@@ -12,6 +12,7 @@ PKG_SOURCE_URL:= @SF/$(PKG_NAME)
 PKG_MD5SUM:=
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
+
 include $(INCLUDE_DIR)/package.mk
 define Package/WifiSmartAc
 	SECTION:=WifiSmartAc

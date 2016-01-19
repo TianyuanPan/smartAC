@@ -1,5 +1,5 @@
 
-TARGET = WifiSmartAc
+TARGET = wifiSmartAc
 
 OBJS = main.o smartac.o smartac_commandline.o \
        smartac_config.o smartac_debug.o \
@@ -12,7 +12,7 @@ OBJS = main.o smartac.o smartac_commandline.o \
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC)  -lpthread    -o     $@   $(OBJS)
+	$(CC)  -lpthread   -o     $@   $(OBJS)
 
 %.o: %c
 	$(CC) $< -c  $@

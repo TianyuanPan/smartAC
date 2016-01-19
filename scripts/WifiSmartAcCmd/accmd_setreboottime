@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+#
+###############################
+
+. /usr/bin/accmd_common
+
+#
+#
+# $(1) cmd_id
+# $(2) gw_ac_id
+# $(3) reboot minuts "mm"
+# $(4) reboot hours  "hh"
+# $(5) refrence date time "YYYY-MM-DD hh:mm:ss"
+#
+#
+
+if [ $# != 5 ];then
+   ErrorMessage $1 $2 "Set reboot time parameter error."
+   exit 1
+fi
+
+date -s "$5" &> /dev/null
+
+ret1=$?
+
+echo "$3 $4 * * * reboot" > /etc/crontabs/root
+
+ret2=$?
+
+ret=$(($ret1+$ret2))
+
+if [ $ret != 0 ];then
+    ErrorMessage $1 $2 "Set reboot time Maybe NOT success."
+    exit 1
+fi
+
+gw_date=$(date "+%Y-%m-%d %H:%M:%S")
+
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set reboot time success.\",\"reboot_info\":\"$4:$3\",\"gw_ac_time\":\"$gw_date\"}"
+
+

@@ -27,8 +27,18 @@ define Package/WifiSmartAc/conffiles
 /etc/smartac.conf
 endef
 define Package/WifiSmartAc/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/WifiSmartAc $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wifiSmartAc $(1)/usr/bin	
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_common $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_collection $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_getsettings $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setdhcp $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_getsettings $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setnetwork $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setreboottime $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setwireless $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/wifiSmartAc.sh $(1)/usr/bin
+	
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/wifismartac.conf $(1)/etc/wifismartac.conf
 endef

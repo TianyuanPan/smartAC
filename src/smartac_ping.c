@@ -83,6 +83,66 @@ static void  ping(void)
     memset(request, 0, sizeof(request));
 
     /*
+     * Populate uptime, memfree and load
+     */
+//    if ((fh = fopen("/proc/uptime", "r"))) {
+//        if (fscanf(fh, "%lu", &sys_uptime) != 1)
+//            debug(LOG_CRIT, "Failed to read uptime");
+//
+//        fclose(fh);
+//    }
+
+//    if ((fh = fopen("/proc/meminfo", "r"))) {
+//        while (!feof(fh)) {
+//            if (fscanf(fh, "MemFree: %u", &sys_memfree) == 0) {
+//                /* Not on this line */
+//                while (!feof(fh) && fgetc(fh) != '\n') ;
+//            } else {
+//                /* Found it */
+//                break;
+//            }
+//        }
+//        fclose(fh);
+//    }
+//
+//    if ((fh = fopen("/proc/loadavg", "r"))) {
+//        if (fscanf(fh, "%f", &sys_load) != 1)
+//            debug(LOG_CRIT, "Failed to read loadavg");
+//
+//        fclose(fh);
+//    }
+
+    /*
+     * Prep & send request
+     *
+     */
+//    snprintf(request, sizeof(request) - 1,
+//             "GET %sgw_id=%s&sys_uptime=%lu&sys_memfree=%u&sys_load=%.2f&thread=ping HTTP/1.0\r\n"
+//             "User-Agent: WiFiAc %s\r\n"
+//             "Host: %s\r\n"
+//             "\r\n",
+//             ac_server->ac_server_ping_path,
+//             config_get_config()->gw_ac_id,
+//             sys_uptime,
+//             sys_memfree,
+//             sys_load,
+//             VERSION,
+//             ac_server->ac_server_hostname
+//
+//         );
+    snprintf(request, sizeof(request) - 1,
+             "GET %sgw_id=%s&thread=ping HTTP/1.0\r\n"
+             "User-Agent: WiFiAcVer %s\r\n"
+             "Host: %s\r\n"
+             "\r\n",
+             ac_server->ac_server_ping_path,
+             config_get_config()->gw_ac_id,
+             VERSION,
+             ac_server->ac_server_hostname
+
+         );
+
+    /*
      * The ping thread does not really try to see if the auth server is actually
      * working. Merely that there is a web server listening at the port. And that
      * is done by connect_auth_server() internally.
@@ -94,55 +154,6 @@ static void  ping(void)
          */
         return;
     }
-
-    /*
-     * Populate uptime, memfree and load
-     */
-    if ((fh = fopen("/proc/uptime", "r"))) {
-        if (fscanf(fh, "%lu", &sys_uptime) != 1)
-            debug(LOG_CRIT, "Failed to read uptime");
-
-        fclose(fh);
-    }
-
-    if ((fh = fopen("/proc/meminfo", "r"))) {
-        while (!feof(fh)) {
-            if (fscanf(fh, "MemFree: %u", &sys_memfree) == 0) {
-                /* Not on this line */
-                while (!feof(fh) && fgetc(fh) != '\n') ;
-            } else {
-                /* Found it */
-                break;
-            }
-        }
-        fclose(fh);
-    }
-
-    if ((fh = fopen("/proc/loadavg", "r"))) {
-        if (fscanf(fh, "%f", &sys_load) != 1)
-            debug(LOG_CRIT, "Failed to read loadavg");
-
-        fclose(fh);
-    }
-
-    /*
-     * Prep & send request
-     *
-     */
-    snprintf(request, sizeof(request) - 1,
-             "GET %sgw_id=%s&sys_uptime=%lu&sys_memfree=%u&sys_load=%.2f&thread=ping HTTP/1.0\r\n"
-             "User-Agent: WiFiAc %s\r\n"
-             "Host: %s\r\n"
-             "\r\n",
-             ac_server->ac_server_ping_path,
-             config_get_config()->gw_ac_id,
-             sys_uptime,
-             sys_memfree,
-             sys_load,
-             VERSION,
-             ac_server->ac_server_hostname
-
-         );
 
     char *res;
 
@@ -171,12 +182,6 @@ static void  ping(void)
 			excute_remote_shell_command(config_get_config()->gw_ac_id, cmdptr);
 		}
 	}
-
-//    printf("==============================================\n");
-//    printf("==============================================\n");
-//    printf("%s\n", res);
-//    printf("==============================================\n");
-//    printf("==============================================\n");
 
 	free(res);
     return;

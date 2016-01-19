@@ -1,0 +1,82 @@
+--------------------------------------------------
+command response to AC format description
+--------------------------------------------------
+Note: "<>"  representative the Space character " ".
+
+===================================
+1.[Set DHCP command] command
+===================================
+
+[FORMAT:]
+
+    Pong <> | <> command_id <> | <> command_string
+    
+[COMMMAND STRING:]
+  
+   accmd_setdhcp <> command_id <> gateway_ac_id <> start <> limit <> leasetime <> ignore
+   
+[VALUES:]
+   
+start = { 1 to 255 }
+
+limit = 255 - start
+
+leasetime = { *m | *h }
+
+ignore = {0 | 1 | NULL}
+
+===================================
+2.[Get ap get settings command]
+===================================
+
+[FORMAT:]
+
+    Pong <> | <> command_id <> | <> command_string
+    
+[COMMMAND STRING:]
+  
+   accmd_getsettings <> command_id <> gateway_ac_id
+   
+   
+   
+   
+===================================
+3.[Set ap reboot time command]
+===================================
+
+[FORMAT:]
+
+    Pong <> | <> command_id <> | <> command_string
+    
+[COMMMAND STRING:]
+
+  accmd_setreboottime <> command_id <> gateway_ac_id <> mm <> hh <> YYYY-MM-DD hh:mm:ss
+   
+   
+
+   
+===================================
+3.[Set wireless command]
+===================================
+
+[FORMAT:]
+
+    Pong <> | <> command_id <> | <> command_string
+    
+[COMMMAND STRING:]
+
+  accmd_setwireless <> command_id <> gateway_ac_id <> disable <> ssid <> encryption <> key <> ssid_hidden 
+   
+[value:]
+   
+disable: {0 | 1 | NULL}
+
+ssid: {ssid | NULL}
+
+encryption: {none | psk2 | psk | NULL}
+
+key: {password | NULL}
+
+ssid_hidden: {0 | 1 | NULL}
+
+

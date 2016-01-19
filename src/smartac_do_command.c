@@ -15,7 +15,7 @@
 
 static void init_file_t(FILE_T *pft)
 {
-	memset(pft->name, 0, 1024);
+	memset((void *)pft->name, 0, 1024);
 	pft->fp = NULL;
 }
 
@@ -26,9 +26,9 @@ FILE_T * excute_open(const char *command, const char *mode)
 	char cmd_line[4096];
 	unsigned int rand_n;
 
-	rand_n = rand()%(99999 - 111 + 1) + 111;
+	rand_n = rand()%(9999 - 1000 + 1) + 1000;
 
-	pft = safe_malloc(sizeof(FILE_T));
+	pft = (FILE_T *)safe_malloc(sizeof(FILE_T));
 
 	if (!pft)
 		return NULL;
@@ -37,13 +37,19 @@ FILE_T * excute_open(const char *command, const char *mode)
 
 
 	sprintf(pft->name, "%sdocmdout_%u", PREFIX, rand_n);
-char *pp = strstr(command, "\n");
-*pp = 0;
+
+	/* FIX ME? */
+     char *pp = NULL;
+     pp = strstr(command, "\n");//
+     if(pp)
+       *pp = 0;//
+
 	sprintf(cmd_line, "%s > %s", command, pft->name);
 
 	printf("===\n cmd_line: %s\n===\n", cmd_line);
 
 	if (execute(cmd_line, 1) != 0){
+		remove(pft->name);
 		free(pft);
 		return NULL;
 	}
@@ -51,6 +57,7 @@ char *pp = strstr(command, "\n");
 	pft->fp = fopen(pft->name, mode);
 
 	if (!pft->fp){
+		remove(pft->name);
 		free(pft);
 		return NULL;
 	}

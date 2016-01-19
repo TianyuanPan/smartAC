@@ -32,10 +32,12 @@ void thread_post_result(void *args)
 {
     char request[MAX_BUF],
          data[MAX_CMD_OUT_BUF];
+    int data_len;
 
     int sockfd;
     t_result *result;
     t_ac_server *ac_server = NULL;
+
     ac_server = get_ac_server();
 
     debug(LOG_DEBUG, "Entering post result()");
@@ -46,18 +48,6 @@ void thread_post_result(void *args)
 
     result = (t_result*)args;
 
-    /*
-     * The ping thread does not really try to see if the auth server is actually
-     * working. Merely that there is a web server listening at the port. And that
-     * is done by connect_auth_server() internally.
-     */
-    sockfd = connect_ac_server();
-    if (sockfd == -1) {
-        /*
-         * No AC servers for me to talk to
-         */
-        return;
-    }
 
     snprintf(data, result->size - 1, "%s", result->result);
     cmdresult_free(result);
@@ -78,6 +68,19 @@ void thread_post_result(void *args)
              data
          );
 
+    /*
+     * The ping thread does not really try to see if the auth server is actually
+     * working. Merely that there is a web server listening at the port. And that
+     * is done by connect_auth_server() internally.
+     */
+    sockfd = connect_ac_server();
+    if (sockfd == -1) {
+        /*
+         * No AC servers for me to talk to
+         */
+        return;
+    }
+
     char *res;
 
     res = http_get(sockfd, request);
@@ -86,12 +89,7 @@ void thread_post_result(void *args)
         debug(LOG_ERR, "There was a problem posting result the AC server!");
         return;
     }
+	free(res);
 
-printf("==============================================\n");
-printf("==============================================\n");
-printf("%s\n", res);
-printf("==============================================\n");
-printf("==============================================\n");
-		free(res);
-    return;
+	return;
 }

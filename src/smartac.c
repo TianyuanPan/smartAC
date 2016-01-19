@@ -31,7 +31,7 @@
 #include "smartac.h"
 
 
-t_queue cmdres_queue;
+t_queue cmdrets_queue;
 
 static pthread_t tid_ping = 0;
 
@@ -91,7 +91,7 @@ termination_handler(int s)
         pthread_kill(tid_ping, SIGKILL);
     }
 
-    destroy_queue(&cmdres_queue);
+    destroy_queue(&cmdrets_queue);
 
     debug(LOG_NOTICE, "Exiting...");
     exit(s == 0 ? 1 : 0);
@@ -162,7 +162,7 @@ static void  main_loop(void)
 	s_config *config = config_get_config();
 	void **params;
 
-	t_result *cmdres = NULL;
+	t_result *cmdrets = NULL;
 
     /* Set the time when AC started */
     if (!started_time) {
@@ -220,7 +220,7 @@ static void  main_loop(void)
 //		exit(1);
 //    }
 
-	initial_queue(&cmdres_queue);
+	initial_queue(&cmdrets_queue);
 
     /* Init the signals to catch chld/quit/etc */
     init_signals();
@@ -237,18 +237,18 @@ static void  main_loop(void)
 
     while(1){
 
-    	cmdres = getout_queue(&cmdres_queue);
+    	cmdrets = getout_queue(&cmdrets_queue);
 
 
-    	if (cmdres){
+    	if (cmdrets){
              printf("==================================\n"
 		            "  main_loop:  I am here !!!!!!!!!!\n"
 		            "==================================\n");
-             printf("=== cmdres: %s \n===\n===\n", (char*)cmdres->result);
-             cmdresult_free(cmdres);
+             printf("=== cmdrets:\n%s \n===\n===\n", (char*)cmdrets->result);
+             cmdresult_free(cmdrets);
     	}
 
-    	cmdres = NULL;
+    	cmdrets = NULL;
 
       sleep(2);
     }

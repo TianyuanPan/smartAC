@@ -162,7 +162,7 @@ int _connect_ac_server(int level)
 		 * DNS resolving was successful
 		 */
 		// mark_online();
-		ip = safe_strdup(inet_ntoa(*h_addr));
+		ip = (char *)safe_strdup(inet_ntoa(*h_addr));
 		debug(LOG_DEBUG,
 				"Level %d: Resolving auth server [%s] succeeded = [%s]", level,
 				hostname, ip);

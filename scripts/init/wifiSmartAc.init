@@ -3,7 +3,7 @@
 # Mon Nov  2 10:00:54 CST 2015 created by GaomingPan
 #
 
-START=98
+START=70
 STOP=60
 
 start()

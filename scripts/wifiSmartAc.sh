@@ -5,5 +5,5 @@
 
 OPTIONS=" -d 4 -s"
 
-/usr/sbin/wifiSmartAc $OPTIONS &>
+/usr/bin/wifiSmartAc $OPTIONS &> /dev/null
 

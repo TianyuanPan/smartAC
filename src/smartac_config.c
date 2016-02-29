@@ -54,7 +54,9 @@ typedef enum {
     oAcServResultPath,
     oCheckInterval,
     oSyslogFacility,
-    oPopularServers
+    oPopularServers,
+    oIsHaveWifidog,
+    oWifidogPath
 } OpCodes;
 
 
@@ -79,6 +81,8 @@ static const struct {
     "HttpPort", oAcServHttpPort}, {
     "PingPath", oAcServPingPath}, {
     "ResultPath", oAcServResultPath}, {
+    "IsHaveWifidog", oIsHaveWifidog}, {
+    "WifidogPath", oWifidogPath}, {
     NULL, oBadOption},
 };
 
@@ -118,6 +122,9 @@ config_init(void)
     config.gw_ac_mac_address = NULL;
     config.gw_ac_interface = NULL;//safe_strdup(DEFAULT_GW_AC_IFACE);
     config.syslog_facility = DEFAULT_SYSLOG_FACILITY;
+
+    config.is_have_wifidog = 0;
+    config.wifidog_path = safe_strdup(DEFAULT_WIFIDGO_PATH);
 
     debugconf.log_stderr = 1;
     debugconf.debuglevel = DEFAULT_DEBUGLEVEL;
@@ -378,10 +385,18 @@ config_read(const char *filename)
                 case oGwAcId:
                     config.gw_ac_id = safe_strdup(p1);
                     break;
+                case oIsHaveWifidog:
+                	sscanf(p1, "%d", &config.is_have_wifidog);
+                	break;
+                case oWifidogPath:
+                	free(config.wifidog_path);
+                	config.wifidog_path = safe_strdup(p1);
+                	break;
                 case oGwAcInterface:
                     config.gw_ac_interface = safe_strdup(p1);
                     break;
                 case oArpTable:
+                	free(config.arp_table_path);
                 	config.arp_table_path = safe_strdup(p1);
                 	break;
                 case oAcServer:

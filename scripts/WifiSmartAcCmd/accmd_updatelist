@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+#
+
+. /usr/bin/accmd_common
+
+#
+# $(1) cmd_id
+# $(2) gw_ac_id
+# $(3) mac_list
+#
+
+WDCTL=/usr/bin/wifiSmartac_update_doglist
+OPTS=$3
+if [ "$OPTS" == "" ]
+then
+   ErrorMessage $1 $2 "update client list MAC-list Param error."
+   exit 1
+fi
+
+$WDCTL $OPTS &> /dev/null
+
+if [ $? == 0 ]
+then
+   echo "{\"gw_ac_id\":\"$2\",\"cmd_id\":\"$1\",\"status\":true,\"info\":\"update list ok.\"}"
+   exit 0
+fi
+
+ErrorMessage $1 $2 "update client list error."
+
+exit 1
+
+

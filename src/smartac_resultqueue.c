@@ -19,6 +19,7 @@ pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void cmdresult_free(t_result *result)
 {
+
 	free(result->result);
 	free(result);
 }
@@ -47,8 +48,6 @@ t_result *cmdresult_malloc(int buf_size)
 
 int initial_queue(t_queue *queue)
 {
-	LOCK_QUEUE();
-
 	QueuePtr p;
 	p = (QueuePtr)safe_malloc(sizeof(QNode));
 	if(!p)
@@ -58,8 +57,6 @@ int initial_queue(t_queue *queue)
 
 	queue->front-> next = NULL;
 	queue->rear->next = NULL;//FIX ME?
-
-	UNLOCK_QUEUE();
 	return 0;
 }
 
@@ -67,7 +64,6 @@ int initial_queue(t_queue *queue)
 
 int destroy_queue(t_queue *queue)
 {
-	LOCK_QUEUE();
 	while (queue->front){
 		queue->rear = queue->front->next;
 
@@ -76,7 +72,6 @@ int destroy_queue(t_queue *queue)
 		free(queue->front);
 		queue->front = queue->rear;
 	}
-	UNLOCK_QUEUE();
 	return 0;
 }
 

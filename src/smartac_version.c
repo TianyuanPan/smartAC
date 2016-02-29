@@ -10,9 +10,9 @@
 
 
 static char _version[][3] = {
-		{"000"},
-		{"000"},
-		{"001"}
+		{0x00},
+		{0x00},
+		{0x01}
 };
 
 static char version[32];

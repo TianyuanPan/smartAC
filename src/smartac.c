@@ -28,6 +28,7 @@
 #include "smartac_ping.h"
 #include "smartac_post_result.h"
 #include "smartac_resultqueue.h"
+#include "smartac_json_util.h"
 
 #include "smartac.h"
 
@@ -149,8 +150,6 @@ static void init_signals(void)
     }
 }
 
-
-
 /**@internal
  * Main execution loop
  */
@@ -207,18 +206,24 @@ static void  main_loop(void)
         }
     }
 
-	/* set excute out dir */
+	/* set excute out dir, can't fail */
 	if (init_excute_outdir() < 0){
 		debug(LOG_ERR, "FATAL: Failed to initalize excute out directory.");
 		exit(1);
 	}
 
-	initial_queue(&cmdrets_queue);
+	/* initial command execute result queue, can't fail */
+	if (initial_queue(&cmdrets_queue) != 0){
+		debug(LOG_ERR, "FATAL: Failed to initalize command result queue.");
+		exit(1);
+	}
+
+    if (update_ac_information(opt_type[OPT_T_INIT_CHAIN]) != 0){
+    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_INIT_CHAIN]) error!");
+    }
 
     /* Init the signals to catch chld/quit/etc */
     init_signals();
-
-
 
     /* Start heartbeat thread */
     result = pthread_create(&tid_ping, NULL, (void *)thread_ping, NULL);
@@ -228,19 +233,35 @@ static void  main_loop(void)
     }
     pthread_detach(tid_ping);
 
+
+    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_t cond_mutex = PTHREAD_MUTEX_INITIALIZER;
+    struct timespec timeout;
+
     while(1){
 
     	cmdrets = getout_queue(&cmdrets_queue);
 
     	if (cmdrets){
-           if (pthread_create(&tid_post, NULL, (void *)thread_post_result, cmdrets) != 0)
+           if (pthread_create(&tid_post, NULL, (void *)thread_post_result, cmdrets) != 0){
                 debug(LOG_WARNING, "FATAL: Failed to create a new thread_post_result - exiting");
-                 //termination_handler(0);
-           else
+                cmdresult_free(cmdrets);
+           }else
             	pthread_detach(tid_post);
     	}
 
-       sleep(2);
+        /* Sleep for 5 seconds... */
+        timeout.tv_sec = time(NULL) + 5L;
+        timeout.tv_nsec = 0;
+
+        /* Mutex must be locked for pthread_cond_timedwait... */
+        pthread_mutex_lock(&cond_mutex);
+
+        /* Thread safe "sleep" */
+        pthread_cond_timedwait(&cond, &cond_mutex, &timeout);
+
+        /* No longer needs to be locked */
+        pthread_mutex_unlock(&cond_mutex);
     }
 }
 

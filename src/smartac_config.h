@@ -16,6 +16,8 @@
 
 #define  DEFAULT_CONFIG_FILE       "/etc/wifismartac.conf"
 
+#define  DEFAULT_WIFIDGO_PATH  "/usr/bin/"
+
 //#define  DEFAULT_GW_AC_IFACE       "eth0.1"
 
 #define  DEFAULT_DAEMON            1
@@ -63,6 +65,8 @@ typedef struct {
     char *gw_ac_interface;
     char *gw_ac_ip_address;
     char *gw_ac_mac_address;
+    int  is_have_wifidog;
+    char *wifidog_path;
     int  daemon;
     int  debuglevel;
     int  syslog_facility;

@@ -27,6 +27,8 @@
 
 #include "smartac_ping.h"
 
+#include "smartac_json_util.h"
+
 
 static void ping(void);
 
@@ -70,7 +72,10 @@ thread_ping(void *arg)
 static void  ping(void)
 {
     char request[MAX_BUF],
+         json[MAX_STRING_LEN] = {0},
          *cmdptr;
+    s_config *config = config_get_config();
+
     FILE *fh;
     int sockfd;
     unsigned long int sys_uptime = 0;
@@ -82,64 +87,59 @@ static void  ping(void)
     debug(LOG_DEBUG, "Entering ping()");
     memset(request, 0, sizeof(request));
 
-    /*
-     * Populate uptime, memfree and load
-     */
-//    if ((fh = fopen("/proc/uptime", "r"))) {
-//        if (fscanf(fh, "%lu", &sys_uptime) != 1)
-//            debug(LOG_CRIT, "Failed to read uptime");
-//
-//        fclose(fh);
-//    }
+    /* start here */
 
-//    if ((fh = fopen("/proc/meminfo", "r"))) {
-//        while (!feof(fh)) {
-//            if (fscanf(fh, "MemFree: %u", &sys_memfree) == 0) {
-//                /* Not on this line */
-//                while (!feof(fh) && fgetc(fh) != '\n') ;
-//            } else {
-//                /* Found it */
-//                break;
-//            }
-//        }
-//        fclose(fh);
-//    }
-//
-//    if ((fh = fopen("/proc/loadavg", "r"))) {
-//        if (fscanf(fh, "%f", &sys_load) != 1)
-//            debug(LOG_CRIT, "Failed to read loadavg");
-//
-//        fclose(fh);
-//    }
+    if ( update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) != 0){
+    	debug(LOG_ERR, "at ping(), update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
+    }
 
-    /*
-     * Prep & send request
-     *
-     */
-//    snprintf(request, sizeof(request) - 1,
-//             "GET %sgw_id=%s&sys_uptime=%lu&sys_memfree=%u&sys_load=%.2f&thread=ping HTTP/1.0\r\n"
-//             "User-Agent: WiFiAc %s\r\n"
-//             "Host: %s\r\n"
-//             "\r\n",
-//             ac_server->ac_server_ping_path,
-//             config_get_config()->gw_ac_id,
-//             sys_uptime,
-//             sys_memfree,
-//             sys_load,
-//             VERSION,
-//             ac_server->ac_server_hostname
-//
-//         );
+    c_list = (client_list *)malloc(sizeof (client_list));
+    if (!c_list){
+    	debug(LOG_ERR, "at ping(), c_list malloc() error.");
+    	return;
+    }
+
+    t_list = (traffic_list *)malloc(sizeof (traffic_list));
+    if (!t_list){
+    	debug(LOG_ERR, "at ping(), t_list malloc() error.");
+    	free(c_list);
+    	return;
+    }
+
+    if (init_client_list(c_list, DHCP_LEASES_FILE) !=0 ||
+    		init_traffic_list(t_list, TRAFFIC_FILE) !=0){
+    	debug(LOG_ERR, "at ping(), init_client_list or init_traffic_list error.");
+    	return;
+    }
+
+    get_traffic_to_client(c_list, t_list);
+
+    if ( build_ping_json_data(json, config->gw_ac_id, c_list) != 0){
+    	debug(LOG_ERR, "at ping(), build_ping_json_data error.");
+    	destory_client_list(c_list);
+    	destory_traffic_list(t_list);
+    	return;
+    }
+
+	destory_client_list(c_list);
+	destory_traffic_list(t_list);
+
+	/* stop here */
+
     snprintf(request, sizeof(request) - 1,
-             "GET %sgw_id=%s&thread=ping HTTP/1.0\r\n"
+             "POST %s HTTP/1.0\r\n"
              "User-Agent: WiFiAcVer %s\r\n"
+   		     "Content-Type: text/json;charset=utf-8\r\n"
+   		     "Content-Length: %d\r\n"
+   		     "Connection: close\r\n"
              "Host: %s\r\n"
-             "\r\n",
+             "\r\n"
+    		 "%s",
              ac_server->ac_server_ping_path,
-             config_get_config()->gw_ac_id,
              VERSION,
-             ac_server->ac_server_hostname
-
+             strlen(json),
+             ac_server->ac_server_hostname,
+             json
          );
 
     /*
@@ -151,7 +151,9 @@ static void  ping(void)
     if (sockfd == -1) {
         /*
          * No AC servers for me to talk to
+         *
          */
+    	debug(LOG_ERR, "No AC servers for me to talk to!");
         return;
     }
 

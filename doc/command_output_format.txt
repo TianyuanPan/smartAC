@@ -62,7 +62,7 @@ dhcp->ignore:      type is numerical, value is 0 or 1, 0  open dhcp, 1 close dhc
 ===========================================================
 
 {
-    "gw_id":"456",
+    "gw_ac_id":"456",
     "cmd_id":"123",
     "status":true,
     "info":"command is get ap settings",
@@ -216,5 +216,25 @@ wifi_info->disable:      type is numericl, 0 or 1
 
 
 
+
+=====================================================================
+
+
+
+=======================================
+3.[accmd_updatelist] out put
+=======================================
+
+{
+   "cmd_id":"string",
+   "gw_ac_id":"string",
+   "status":true,
+   "info":"string,the message",
+}
+
+cmd_id:            type is string, the command ID
+gw_ac_id:          type is string, the Gateway's WifiSmartAc ID
+status:            type is boolean, a fail flag
+info:              type is string, a simple description message
 
 =====================================================================

@@ -20,7 +20,7 @@ STMP=/tmp/.stmpfile_ac
 RESULT_FILE=/tmp/.routersettings_ac
 RESULT=""
 echo "" > $RESULT_FILE
-#RESULT="$RESULT$(echo "{\"gw_id\":\"$1\",\"cmd_id\":\"$2\",\"type\":\"getsettings\",")"
+#RESULT="$RESULT$(echo "{\"gw_ac_id\":\"$1\",\"cmd_id\":\"$2\",\"type\":\"getsettings\",")"
 RESULT="$RESULT$(echo "{\"gw_id\":\"$2\",\"cmd_id\":\"$1\",\"status\":true,\"info\":\"command is get ap settings\",")"
 RESULT="$RESULT$(echo "\"result\":{\"wireless\":{")"
 uci show wireless > $TMP

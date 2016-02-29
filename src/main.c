@@ -3,6 +3,7 @@
 
 
 
+/* the entry point only */
 
 int main(int c, char **argv)
 {

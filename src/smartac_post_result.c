@@ -59,7 +59,7 @@ void thread_post_result(void *args)
     snprintf(request, sizeof(request) - 1,
              "POST %s HTTP/1.0\r\n"
              "User-Agent: WiFiAc %s\r\n"
-    		 "Content-Type: application/json\r\n"
+    		 "Content-Type: text/json;charset=utf-8\r\n"
     		 "Content-Length: %d\r\n"
     		 "Connection: close\r\n"
              "Host: %s\r\n"
@@ -103,8 +103,6 @@ void thread_post_result(void *args)
 
     if(!retptr)
     	debug(LOG_ERR, "AC response is NOT Success !");
-
-    //debug(LOG_DEBUG, "AC response  Success !");
 
 	free(res);
 

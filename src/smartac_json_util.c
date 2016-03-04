@@ -33,7 +33,7 @@ int init_client_list(client_list *list, const char *dhcp_leases_file)
 {
 	FILE *fp;
 	client_list *head, *pre;
-	char *seg[6], line[512], *ptr;
+	char *seg[16], line[512], *ptr;
 	int i;
 	char delimiter = ' ';
 
@@ -176,7 +176,7 @@ int init_traffic_list(traffic_list *list, const char *traffic_file)
 {
 	FILE *fp;
 	traffic_list *head, *pre;
-	char *seg[6], line[1024], *ptr;
+	char *seg[16], line[1024], *ptr;
 	int i;
 
 	char delimiter = ' ';

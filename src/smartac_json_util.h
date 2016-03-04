@@ -56,6 +56,13 @@ extern const char *opt_type[];
 extern client_list   *c_list;
 extern traffic_list  *t_list;
 
+/*
+ * @brief: ------------------------------------
+ *         fdafafa
+ * @list:  ----
+ * @dhcp_lease_file: ----
+ * @return value: ---
+ * */
 int init_client_list(client_list *list, const char *dhcp_leases_file);
 
 void  destory_client_list(client_list *list);
@@ -87,5 +94,6 @@ int  get_dog_json_info(char *json, const char *wdctl);
 int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list);
 
 int update_ac_information(const char *opt_type);
+
 
 #endif /* SMARTAC_JSON_UTIL_H_ */

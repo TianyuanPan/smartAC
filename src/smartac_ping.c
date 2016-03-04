@@ -87,7 +87,7 @@ static void  ping(void)
     debug(LOG_DEBUG, "Entering ping()");
     memset(request, 0, sizeof(request));
 
-    /* start here */
+    /* data collecting start here */
 
     if ( update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) != 0){
     	debug(LOG_ERR, "at ping(), update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
@@ -124,7 +124,7 @@ static void  ping(void)
 	destory_client_list(c_list);
 	destory_traffic_list(t_list);
 
-	/* stop here */
+	/* data collecting stop here */
 
     snprintf(request, sizeof(request) - 1,
              "POST %s HTTP/1.0\r\n"

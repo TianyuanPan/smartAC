@@ -93,6 +93,10 @@ void termination_handler(int s)
 
     destroy_queue(&cmdrets_queue);
 
+    if (update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]) != 0){
+    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]) error!");
+    }
+
     debug(LOG_NOTICE, "Exiting...");
     exit(s == 0 ? 1 : 0);
 }
@@ -220,6 +224,9 @@ static void  main_loop(void)
 
     if (update_ac_information(opt_type[OPT_T_INIT_CHAIN]) != 0){
     	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_INIT_CHAIN]) error!");
+    }
+    if (update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) != 0){
+    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
     }
 
     /* Init the signals to catch chld/quit/etc */

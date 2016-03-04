@@ -50,7 +50,7 @@ ignore = {0 | 1 | NULL}
     
 [COMMMAND STRING:]
 
-  accmd_setreboottime <> command_id <> gateway_ac_id <> mm <> hh <> YYYY-MM-DD hh:mm:ss
+  accmd_setreboottime <> command_id <> gateway_ac_id <> mm <> hh <> "YYYY-MM-DD HH:mm:ss"
    
    
 
@@ -78,5 +78,24 @@ encryption: {none | psk2 | psk | NULL}
 key: {password | NULL}
 
 ssid_hidden: {0 | 1 | NULL}
+
+
+
+===================================
+4.[Offline user command]
+===================================
+
+[FORMAT:]
+
+    Pong <> | <> command_id <> | <> command_string
+    
+[COMMMAND STRING:]
+
+  accmd_updatelist <> command_id <> gateway_ac_id <> "mac1 mac3 mac3 ..." 
+   
+[value:]
+
+
+
 
 

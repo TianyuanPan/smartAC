@@ -16,7 +16,7 @@
 
 #define  DEFAULT_CONFIG_FILE       "/etc/wifismartac.conf"
 
-#define  DEFAULT_WIFIDGO_PATH  "/usr/bin/"
+#define  DEFAULT_WIFIDGO_PATH      "/usr/bin/"
 
 //#define  DEFAULT_GW_AC_IFACE       "eth0.1"
 

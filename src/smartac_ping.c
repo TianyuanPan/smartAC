@@ -127,9 +127,9 @@ static void  ping(void)
 	/* data collecting stop here */
 
     snprintf(request, sizeof(request) - 1,
-             "POST %s HTTP/1.0\r\n"
+             "POST %s HTTP/1.1\r\n"
              "User-Agent: WiFiAcVer %s\r\n"
-   		     "Content-Type: text/json;charset=utf-8\r\n"
+   		     "Content-Type: application/json;charset=utf-8\r\n"
    		     "Content-Length: %d\r\n"
    		     "Connection: close\r\n"
              "Host: %s\r\n"

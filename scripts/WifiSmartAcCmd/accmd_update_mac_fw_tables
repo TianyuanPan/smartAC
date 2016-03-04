@@ -1,14 +1,24 @@
 #!/bin/sh
-#
-######################################
+########################################################################
+## 此 shell 的功能是设置 AC 的的黑白名单，配合修改的 WIFI dog 使用。
+## 当没有WIFI dog时，只可以设置黑名单；有 WIFI dog时才可以设置白名单。
+#########################################################################
 
-#
+##############################################################
 # $(1) cmd_id: string
 # $(2) gw_ac_id: string
 # $(3) dogflag: 0 | 1, 0-->not have dog, 1-->have dog
 # $(4) macflag: black | white | cancel_black | cancel_white
 # $(5) maclist: "mac1 mac2 mac3 ..."
 #
+# 这5个参数有外部传进来，现在说明如下：
+# cmd_id：字符串，命令的id
+# gw_ac_id： 字符串，网关 id
+# dogflag：WIFIdog 标识，有WIFIdog时为 1， 没有WIFIdog时为 0
+# macflag: MAC地址标识，取值 black 设置黑名单，取值 white 设置
+#          白名单， 取值 cancel_black 取消黑名单， 取值 cancel_white 取消白名单
+# maclist: MAC 地址列表
+#####################################################################################
 
 BLACK_MAC_LIST=/tmp/.black.mac.list
 WHITE_MAC_LIST=/tmp/.white.mac.list
@@ -23,7 +33,9 @@ MAC_LIST=$5
 
 . /usr/bin/accmd_common
 
-
+###################################
+# 参数检查函数
+###################################
 parameter_check()
 {
    if [ -z $CMD_ID ]
@@ -45,6 +57,9 @@ parameter_check()
 }
 
 
+#######################################
+# 设置 MAC 列表
+######################################
 set_mac_list()
 {
    case $MAC_FLAG in
@@ -60,6 +75,9 @@ set_mac_list()
      return 1
 }
 
+###################################
+# 设置 黑名单
+###################################
 add_mac_to_black_rule()
 {
    white_chain_name=""
@@ -98,7 +116,9 @@ add_mac_to_black_rule()
    return 0
 }
 
-
+#########################################
+# 设置白名单
+#########################################
 add_mac_to_white_rule()
 {
    if [ $DOG_FLAG != 1 ]
@@ -124,6 +144,9 @@ add_mac_to_white_rule()
    return 0
 }
 
+#########################################
+# 取消黑名单
+#########################################
 cancel_black_mac_list()
 {
    while read line
@@ -136,6 +159,9 @@ cancel_black_mac_list()
    done < $BLACK_MAC_LIST
 }
 
+#########################################
+# 取消白名单
+#########################################
 cancel_white_mac_list()
 {
   white_chain_name=$(iptables -t mangle -nvx -L | grep Outgoing | sed -n "1p" | awk '{print $3}')
@@ -149,7 +175,9 @@ cancel_white_mac_list()
    done < $WHITE_MAC_LIST
 }
 
-
+#########################################
+# 主操作函数
+#########################################
 main_operation()
 {
   parameter_check

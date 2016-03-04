@@ -1,0 +1,118 @@
+#!/bin/sh
+#
+#
+
+. /usr/bin/accmd_common
+
+
+
+############################################
+# $(1) cmd_id
+# $(2) gw_ac_id
+# $(3) disabled
+# $(4) ssid
+# $(5) encryption
+# $(6) key(password)
+# $(7) ssid_hidden
+###########################################
+
+
+WIFI_DISABLED=""
+WIFI_SSID=""
+WIFI_ENCRYPTION=""
+WIFI_KEY=""
+WIFI_SSID_HIDDEN=""
+
+if [ $# != 7 ];then
+   ErrorMessage $1 $2 "Set wireless parameter Error."
+   exit 1
+fi
+
+set_wireless()
+{
+# $(1) disabled
+# $(2) ssid
+# $(3) encryption
+# $(4) key(password)
+# $(5) ssid_hidden
+   ret=1
+   WIFI_DISABLED="$1"
+   WIFI_SSID="$2"
+   WIFI_ENCRYPTION="$3"
+   WIFI_KEY="$4"
+   WIFI_SSID_HIDDEN="$5"
+   
+if [ "$WIFI_DISABLED" == "NULL" ];then
+      WIFI_DISABLED=0
+fi
+   
+if [ "$WIFI_SSID" == "NULL" ];then
+      WIFI_SSID="nullssid"
+fi
+
+if [ "$WIFI_ENCRYPTION" == "NULL" ];then
+      WIFI_ENCRYPTION="none"
+fi
+
+if [ "$WIFI_KEY" == "NULL" ];then
+     WIFI_ENCRYPTION="none"
+     WIFI_KEY="123456"
+fi
+
+if [ "$WIFI_SSID_HIDDEN" == "NULL" ];then
+
+    WIFI_SSID_HIDDEN="0"
+
+fi
+
+uci set wireless.radio0.disabled=$WIFI_DISABLED
+uci set wireless.@wifi-iface[0].ssid=$WIFI_SSID
+uci set wireless.@wifi-iface[0].encryption=$WIFI_ENCRYPTION
+uci set wireless.@wifi-iface[0].key=$WIFI_KEY
+uci set wireless.@wifi-iface[0].hidden=$WIFI_SSID_HIDDEN
+uci commit wireless
+
+return $?
+
+}
+
+wireless_restart()
+{
+/bin/ubus call network reload &> /dev/null
+return $?
+}
+
+
+
+set_wireless $3 $4 $5 $6 $7
+
+if [ $? != 0 ];then
+   ErrorMessage $1 $2 "Set wireless wifi attribute  Error."
+   exit 1
+fi
+
+ssid=$(uci get wireless.@wifi-iface[0].ssid)
+encryption=$(uci get wireless.@wifi-iface[0].encryption)
+key=$(uci get wireless.@wifi-iface[0].key)
+hidden=$(uci get wireless.@wifi-iface[0].hidden)
+disable=$(uci get wireless.radio0.disabled)
+
+if [ "$disable" == "" ];then
+    disable=0
+fi
+
+if [ "$hidden" == "" ];then
+    hidden=0
+fi
+
+wireless_restart
+
+if [ $? != 0 ];then
+   ErrorMessage $1 $2 "Set wireless ubus call network reload  Error."
+   exit 1
+fi
+
+
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set wireless success.\",\"wifi_info\":{\"ssid\":\"$ssid\",\"encryption\":\"$encryption\",\"key\":\"$key\",\"ssid_hidden\":$hidden,\"disable\":$disable}}"
+
+

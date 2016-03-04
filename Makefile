@@ -1,4 +1,4 @@
-SUBDIR = src libcurl/lib
+SUBDIR = src
 
 define make_subdir
 	@for subdir in $(SUBDIR); do \

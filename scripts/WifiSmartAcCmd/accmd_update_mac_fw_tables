@@ -1,0 +1,205 @@
+#!/bin/sh
+#
+######################################
+
+#
+# $(1) cmd_id: string
+# $(2) gw_ac_id: string
+# $(3) dogflag: 0 | 1, 0-->not have dog, 1-->have dog
+# $(4) macflag: black | white | cancel_black | cancel_white
+# $(5) maclist: "mac1 mac2 mac3 ..."
+#
+
+BLACK_MAC_LIST=/tmp/.black.mac.list
+WHITE_MAC_LIST=/tmp/.white.mac.list
+
+CMD_ID=$1
+GW_AC_ID=$2
+DOG_FLAG=$3
+MAC_FLAG=$4
+MAC_LIST=$5
+
+
+
+. /usr/bin/accmd_common
+
+
+parameter_check()
+{
+   if [ -z $CMD_ID ]
+   then
+      return 1
+   fi
+   
+   if [ -z $GW_AC_ID ]
+   then
+      return 1
+   fi
+   
+   if [ -z $DOG_FLAG ]
+   then
+      return 1
+   fi
+   
+   return 0
+}
+
+
+set_mac_list()
+{
+   case $MAC_FLAG in
+      "black") echo "$MAC_LIST" | tr [a-z] [A-Z] | sed 's/ /\n/g' > $BLACK_MAC_LIST
+         return 0;;
+      "white") echo "$MAC_LIST" | tr [a-z] [A-Z] | sed 's/ /\n/g' > $WHITE_MAC_LIST
+         return 0;;
+      *)
+         ErrorMessage $CMD_ID $GW_AC_ID "ERROR:Set mac list error."
+         exit 1
+       ;;
+   esac
+     return 1
+}
+
+add_mac_to_black_rule()
+{
+   white_chain_name=""
+   
+   if [ $DOG_FLAG == 1 ]
+   then
+      white_chain_name=$(iptables -t mangle -nvx -L | grep Outgoing | sed -n "1p" | awk '{print $3}')
+      
+      while read line
+      do
+         target=$(iptables -t mangle -nvx -L | grep "MAC $line MARK set 0x2")
+         if [ -n "$target" ]
+         then
+            iptables -t mangle -D $white_chain_name -m mac --mac-source $line -j MARK --set-mark 0x2
+         fi
+         target=$(iptables -t filter -nvx -L | grep "MAC $line" )
+         if [ -z "$target" ]
+         then
+            iptables -t filter -I INPUT -m mac --mac-source $line -j DROP
+         fi
+         
+      done < $BLACK_MAC_LIST
+      return 0
+   fi
+   
+   while read line
+   do
+      target=$(iptables -t filter -nvx -L | grep "MAC $line" )
+      if [ -z "$target" ]
+      then
+        iptables -t filter -I INPUT -m mac --mac-source $line -j DROP
+      fi
+         
+   done < $BLACK_MAC_LIST
+   
+   return 0
+}
+
+
+add_mac_to_white_rule()
+{
+   if [ $DOG_FLAG != 1 ]
+   then
+    ErrorMessage $CMD_ID $GW_AC_ID "ERROR: ap not have WifiDog, can't set white MAC list."
+    exit 1
+   fi
+   white_chain_name=$(iptables -t mangle -nvx -L | grep Outgoing | sed -n "1p" | awk '{print $3}')
+   while read line
+   do
+     target=$(iptables -t filter  -nvx -L | grep "MAC $line")
+     if [ -n "$target" ]
+     then
+         iptables -t filter -D INPUT -m mac --mac-source $line -j DROP
+     fi
+     target=$(iptables -t mangle -nvx -L | grep "MAC $line MARK set 0x2")
+     if [ -z "$target" ]
+     then
+       iptables -t mangle -I $white_chain_name -m mac --mac-source $line -j MARK --set-mark 0x2
+     fi
+         
+   done < $WHITE_MAC_LIST
+   return 0
+}
+
+cancel_black_mac_list()
+{
+   while read line
+   do
+     target=$(iptables -t filter  -nvx -L | grep "MAC $line")
+     if [ -n "$target" ]
+     then
+       iptables -t filter -D INPUT -m mac --mac-source $line -j DROP &> /dev/null
+     fi
+   done < $BLACK_MAC_LIST
+}
+
+cancel_white_mac_list()
+{
+  white_chain_name=$(iptables -t mangle -nvx -L | grep Outgoing | sed -n "1p" | awk '{print $3}')
+   while read line
+   do
+     target=$(iptables -t mangle -nvx -L | grep "MAC $line MARK set 0x2")
+     if [ -n "$target" ]
+     then
+       iptables -t mangle -D $white_chain_name -m mac --mac-source $line -j MARK --set-mark 0x2 &> /dev/null
+     fi
+   done < $WHITE_MAC_LIST
+}
+
+
+main_operation()
+{
+  parameter_check
+  ret=$?
+  if [ $ret != 0 ]
+  then
+     ErrorMessage $CMD_ID $GW_AC_ID "ERROR:Paramter error."
+     exit 1
+  fi
+  
+  case $MAC_FLAG in
+    "black")
+           cancel_black_mac_list
+           set_mac_list
+           add_mac_to_black_rule
+           ret=$?
+           if [ $ret != 0 ]
+           then
+              ErrorMessage $CMD_ID $GW_AC_ID "ERROR:Set black mac list error."
+              exit 1
+           fi
+           SuccessMessage $CMD_ID $GW_AC_ID "Set black mac list success."
+         ;;
+    "white")
+          cancel_white_mac_list
+          set_mac_list
+          add_mac_to_white_rule
+          ret=$?
+          if [ $ret != 0 ]
+          then
+             ErrorMessage $CMD_ID $GW_AC_ID "ERROR:Set white mac list error."
+             exit 1
+          fi
+          SuccessMessage $CMD_ID $GW_AC_ID "Set white mac list success."
+         ;;
+    "cancel_black")
+          cancel_black_mac_list
+          SuccessMessage $CMD_ID $GW_AC_ID "Cancel black mac list success."
+          ;;
+    "cancel_white")
+          cancel_white_mac_list
+          SuccessMessage $CMD_ID $GW_AC_ID "Cancel white mac list success."
+          ;;
+     *)
+        ErrorMessage $CMD_ID $GW_AC_ID "ERROR:Unknow internal error."
+      ;;
+  esac
+  return 0
+}
+
+
+main_operation
+

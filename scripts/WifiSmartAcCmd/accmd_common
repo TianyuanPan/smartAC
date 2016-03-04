@@ -1,0 +1,69 @@
+
+
+##############################################
+##
+## $(1):cmd_id
+## $(2):gw_ac_id
+## $(3):messages
+##
+###############################################
+
+ErrorMessage()
+{
+  echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":false,\"info\":\"$3\"}"
+}
+
+##############################################
+##
+## $(1):cmd_id
+## $(2):gw_ac_id
+## $(3):messages
+##
+###############################################
+
+SuccessMessage()
+{
+  echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"$3\"}"
+}
+
+#########################################
+#
+# reboot interface lan, wan or wifi.
+#
+#########################################
+
+RebootInterface()
+{
+   ret=0
+   ret_a=0
+   ret_b=0
+   
+   if [ "$1" == "" ];then
+     return 1
+   fi
+   
+   if [ "$1" == "lan" ];then
+       ifdown lan
+       ret_a=$?
+       ifup lan
+       ret_b=$?
+       ret=$(($ret_a+$ret_b))
+       return $ret
+   fi
+   
+      if [ "$1" == "wan" ];then
+       ifdown wan
+       ret_a=$?
+       ifup wan
+       ret_b=$?
+       ret=$(($ret_a+$ret_b))
+       return $ret
+   fi
+   
+      if [ "$1" == "wifi" ];then
+       wifi reload
+       ret=$?
+       return $ret
+   fi
+}
+

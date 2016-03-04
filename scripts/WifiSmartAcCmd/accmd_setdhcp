@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+#
+#
+##########################
+
+
+#
+# $(1): cmd id
+# $(2): gw_ac_id
+# $(3): dhcp IP start 
+# $(4): dhcp IP limit numbers
+# $(5): dhcp leasetime min:2m, normal:12h
+# $(6): dhcp switch, 0 OPEN dhcp, 1 CLOSE dhcp
+#
+#
+
+start=$3
+limit=$4
+leasetime=$5
+ignore=$6
+
+
+. /usr/bin/accmd_common
+
+
+if [ $# != 6 ];then
+    ErrorMessage $1 $2 "set dhcp parameter error."
+    exit 1
+fi
+
+
+if [ $start == "" ];then
+    start=100
+fi
+
+
+if [ $limit == "" ];then
+   limit=150
+fi
+
+if [ $leasetime == "" ];then
+  leasetime=12
+fi
+
+case $ignore in
+  "1")
+  ignore=1
+  ;;
+  *)
+  ignore=0
+  ;;
+esac
+
+uci set dhcp.lan.start=$start
+uci set dhcp.lan.limit=$limit
+uci set dhcp.lan.leasetime=$leasetime
+uci set dhcp.lan.ignore=$ignore
+uci commit dhcp
+
+ret=$?
+if [ $ret != 0 ];then
+    ErrorMessage $1 $2 "uci commit dhcp ERROR."
+    exit 1
+fi
+
+RebootInterface lan
+ret=$?
+if [ $ret != 0 ];then
+    ErrorMessage $1 $2 "reboot lan interface error."
+    exit 1
+fi
+
+start=$(uci get dhcp.lan.start)
+limit=$(uci get dhcp.lan.limit)
+leasetime=$(uci get dhcp.lan.leasetime)
+ignore=$(uci get dhcp.lan.ignore)
+
+if [ "$ignore" == "" ]; then
+      ignore=0
+fi
+
+info="Set DHCP Success."
+
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"$info\",\"dhcp\":{\"start\":$start,\"limit\":$limit,\"leasetime\":\"$leasetime\",\"ignore\":$ignore}}"
+
+
+
+
+
+
+
+

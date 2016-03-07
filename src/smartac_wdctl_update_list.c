@@ -10,7 +10,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <syslog.h>
 
+#include "smartac_debug.h"
 
 #define  DEFAULT_WDCTL_BIN   "/usr/bin/wdctl"
 
@@ -37,12 +39,12 @@ static int do_wdctl_reset(const char *mac)
 
 	char *argv[] = {parm[0], parm[1], parm[2], NULL};
 
-//	printf("child bin and argv: %s %s %s %s\n", DEFAULT_WDCTL_BIN, parm[0], parm[1], parm[2]);
+	debug(LOG_INFO, "Update list  argv: %s %s %s %s", DEFAULT_WDCTL_BIN, parm[0], parm[1], parm[2]);
 
 	execv(DEFAULT_WDCTL_BIN, argv);
 
 	// never reach here otherwise execv error.
-	printf("child execv ERROR.\nError Message: %s\n", strerror(errno));
+	debug(LOG_ERR, "child execv ERROR.\nError Message: %s\n", strerror(errno));
 	exit(-1);
 }
 
@@ -56,8 +58,10 @@ int main(int argc, char **argv)
 
 	for (i = 1; i < argc; i++){
 		pid = fork();
-		if (pid == -1) // fork() failure.
+		if (pid == -1){ // fork() failure.
+			debug(LOG_ERR, "Update list fork() ERROR!");
 			return -1;
+		}
 
 		if ( pid == 0){ // the child.
 			do_wdctl_reset(argv[i]);

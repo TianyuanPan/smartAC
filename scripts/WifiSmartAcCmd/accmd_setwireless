@@ -1,12 +1,22 @@
 #!/bin/sh
+##################################################
 #
+# 作 者：潘田园
+# 日 期：2016-03-04
+# 版 本：
 #
+# 脚本描述：
+#	 此脚本对无线参数的设置，包括无线开关，
+# 加密方式，密码，ssid名称等
+#
+##################################################
 
 . /usr/bin/accmd_common
 
 
 
-############################################
+##################################################
+#
 # $(1) cmd_id
 # $(2) gw_ac_id
 # $(3) disabled
@@ -14,7 +24,17 @@
 # $(5) encryption
 # $(6) key(password)
 # $(7) ssid_hidden
-###########################################
+#
+# 参数说明：
+#	 cmd_id: 命令id
+#	 gw_ac_id: 网关id
+#	 disabled: wifi开关，取值{0 |1},值为 1 关闭wifi，值为 0 开启wifi
+#	 ssid: wifi名称
+#	 encryption: 加密方式，取值{none | psk | psk2}, 值为 none 无密码，其他有密码
+#	 key: 密码串
+#	 ssid_hidden: wifi名称隐藏开关，取值{0 | 1}，值为 1 隐藏，值为 0 不隐藏
+#
+##################################################
 
 
 WIFI_DISABLED=""
@@ -28,13 +48,16 @@ if [ $# != 7 ];then
    exit 1
 fi
 
-set_wireless()
-{
+
+################################
 # $(1) disabled
 # $(2) ssid
 # $(3) encryption
 # $(4) key(password)
 # $(5) ssid_hidden
+################################
+set_wireless()
+{
    ret=1
    WIFI_DISABLED="$1"
    WIFI_SSID="$2"
@@ -112,7 +135,6 @@ if [ $? != 0 ];then
    exit 1
 fi
 
-
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set wireless success.\",\"wifi_info\":{\"ssid\":\"$ssid\",\"encryption\":\"$encryption\",\"key\":\"$key\",\"ssid_hidden\":$hidden,\"disable\":$disable}}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set wireless success.\",\"data\":{\"ssid\":\"$ssid\",\"encryption\":\"$encryption\",\"key\":\"$key\",\"ssid_hidden\":$hidden,\"disable\":$disable}}"
 
 

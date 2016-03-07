@@ -1,4 +1,11 @@
 #!/bin/sh
+#########################################
+#
+# 作 者：潘田园
+# 日 期：2016-03-04
+# 版 本：
+#
+# 脚本描述：
 #
 #
 #
@@ -82,7 +89,7 @@ fi
 
 info="Set DHCP Success."
 
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"$info\",\"dhcp\":{\"start\":$start,\"limit\":$limit,\"leasetime\":\"$leasetime\",\"ignore\":$ignore}}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"$info\",\"data\":{\"start\":$start,\"limit\":$limit,\"leasetime\":\"$leasetime\",\"ignore\":$ignore}}"
 
 
 

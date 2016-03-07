@@ -1,14 +1,34 @@
 #!/bin/sh
+##############################################################
 #
-######################################
+# 作 者：潘田园
+# 日 期：2016-03-04
+# 版 本：
+#
+# 脚本描述：
+#	此脚本用于设置 MAC 地址的黑白名单，在没有 wifidog 的情况下，
+# 只能设置黑名单，要设置白名单必须要有 wifidog。
+#
+##############################################################
 
-#
+##############################################################
 # $(1) cmd_id: string
 # $(2) gw_ac_id: string
 # $(3) dogflag: 0 | 1, 0-->not have dog, 1-->have dog
 # $(4) macflag: black | white | cancel_black | cancel_white
 # $(5) maclist: "mac1 mac2 mac3 ..."
 #
+# 参数描述：
+#	以上参数由调用者传入，说明如下：
+# cmd_id: 命令id
+# gw_ac_id: 网关id
+# dogflag: wifidog 有无标识，取值 {0 | 1}，值为 0 没有wifidog，值为 1 有wifidog
+# macflag: MAC 地址设置标识， 取值 {black | white | cancel_black | cancel_white}，
+#	   值为 black 设置黑名单，值为 white 设置白名单， 值为cancel_black 取消黑名单，
+#	   值为cancel_white 取消白名单。
+# maclist: 要设置的 MAC 地址列表，格式为： "mac1 mac2 mac3 ..."
+#
+##################################################################
 
 BLACK_MAC_LIST=/tmp/.black.mac.list
 WHITE_MAC_LIST=/tmp/.white.mac.list
@@ -24,6 +44,9 @@ MAC_LIST=$5
 . /usr/bin/accmd_common
 
 
+#################################
+# 参数检查，成功返回 0，失败返回 1。
+#################################
 parameter_check()
 {
    if [ -z $CMD_ID ]
@@ -45,6 +68,9 @@ parameter_check()
 }
 
 
+####################################################
+# 设置MAC 地址到文件，成功返回 0，失败退出脚本并输出错误信息。
+#####################################################
 set_mac_list()
 {
    case $MAC_FLAG in
@@ -60,6 +86,10 @@ set_mac_list()
      return 1
 }
 
+
+###########################
+# 添加MAC地址到黑名单
+###########################
 add_mac_to_black_rule()
 {
    white_chain_name=""
@@ -99,6 +129,9 @@ add_mac_to_black_rule()
 }
 
 
+###########################
+# 添加MAC地址到白名单
+###########################
 add_mac_to_white_rule()
 {
    if [ $DOG_FLAG != 1 ]
@@ -124,6 +157,9 @@ add_mac_to_white_rule()
    return 0
 }
 
+###########################
+# 取消MAC地址黑名单
+###########################
 cancel_black_mac_list()
 {
    while read line
@@ -136,6 +172,10 @@ cancel_black_mac_list()
    done < $BLACK_MAC_LIST
 }
 
+
+###########################
+# 取消MAC地址到白名单
+###########################
 cancel_white_mac_list()
 {
   white_chain_name=$(iptables -t mangle -nvx -L | grep Outgoing | sed -n "1p" | awk '{print $3}')
@@ -150,6 +190,9 @@ cancel_white_mac_list()
 }
 
 
+###########################
+# 脚本的主操作函数
+###########################
 main_operation()
 {
   parameter_check
@@ -201,5 +244,8 @@ main_operation()
 }
 
 
+##################
+# 执行操作
+##################
 main_operation
 

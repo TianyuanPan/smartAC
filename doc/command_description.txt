@@ -1,99 +1,113 @@
---------------------------------------------------
-command response to AC format description
---------------------------------------------------
-Note: "<>"  representative the Space character " ".
+============================================================
+  作   者：潘田园
+  日   期：2016-03-09
+  版   本：
+  文档描述：
+          此文档说明AC的远程命令、命令的格式、命令的参数及其相关取值
+============================================================
 
-===================================
-1.[Set DHCP command] command
-===================================
 
-[FORMAT:]
+============================================================
+ 【服务器回复有、无命令时的格式说明】  
+============================================================
+1、当没有命令时，远程服务器回复：
+                           Pong
+2、当有命令时，远程服务器回复：
+                           Pong<空格>|<空格>命令ID<空格>|<空格>命令串
+3、命令串格式：
+            命令名称<空格>参数1<空格>参数2<空格>参数3 ...
+4、示例(以设置dhcp命令为列)：
+      无命令：  Pong
+      有命令：  Pong | ae00-57f2-4233-efcb-b270ec | accmd_setdhcp ae00-57f2-4233-efcb-b270ec 40A5EF83CCB8 100 50 12m 0   
 
-    Pong <> | <> command_id <> | <> command_string
-    
-[COMMMAND STRING:]
-  
-   accmd_setdhcp <> command_id <> gateway_ac_id <> start <> limit <> leasetime <> ignore
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+=========================================
+ 【命令】： 设置 DHCP 命令
+=========================================
+
+1、命令名称：
+           accmd_setdhcp
+           
+2、命令格式：
+           accmd_setdhcp<空格>command_id<空格>gateway_ac_id<空格>start<空格>limit<空格>leasetime<空格>ignore
    
-[VALUES:]
+3、参数说明：
+              command_id: 命令ID，取值为字符串
+           gateway_ac_id: 网关ID，取值为字符串
+                   start: dhcp 的开始地址，建议取值 2 到 254
+                   limit: dhcp 的地址容量
+               leasetime: dhcp 的租约时间，最小 2 分钟，最大 14 小时，取值以 m 或 h 为单位，如 16m 或 2h  
+                  ignore: dhcp 服务的开关，取值为 0 或 1， 0 开启， 1 关闭
+                  
+++++++++++++++++++++++++++++++++++++++++
+           
+
+
+=============================================================
+  【命令】： 设置自动重启动时间(当没此命令没有参数时，关闭自动重启动定时)
+=============================================================
+
+
+1、命令名称：
+           accmd_setreboottime
+           
+2、命令格式：
+           accmd_setreboottime<空格>command_id<空格>gateway_ac_id<空格>hh<空格>mm<空格>"YYYY-MM-DD HH:mm:ss"
    
-start = { 1 to 255 }
-
-limit = 255 - start
-
-leasetime = { *m | *h }
-
-ignore = {0 | 1 | NULL}
-
-===================================
-2.[Get ap get settings command]
-===================================
-
-[FORMAT:]
-
-    Pong <> | <> command_id <> | <> command_string
-    
-[COMMMAND STRING:]
-  
-   accmd_getsettings <> command_id <> gateway_ac_id
+3、参数说明：
+                command_id: 命令ID，取值为字符串
+             gateway_ac_id: 网关ID，取值为字符串
+                        hh: 重启动定时的小时时间部分，取值 00 到 23
+                        mm: 重启动定时的分钟时间部分，取值 00 到 59
+     "YYYY-MM-DD HH:mm:ss": 重启动的时间校正，如 "2016-03-09 13:24:08"
    
-   
-   
-   
-===================================
-3.[Set ap reboot time command]
-===================================
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-[FORMAT:]
 
-    Pong <> | <> command_id <> | <> command_string
-    
-[COMMMAND STRING:]
-
-  accmd_setreboottime <> command_id <> gateway_ac_id <> mm <> hh <> "YYYY-MM-DD HH:mm:ss"
-   
-   
 
    
-===================================
-3.[Set wireless command]
-===================================
+==========================================
+  【命令】： 设置无线(WIFI)的信息
+==========================================
 
-[FORMAT:]
+1、命令名称：
+           accmd_setwireless
+           
+2、命令格式：
+           accmd_setwireless<空格>command_id<空格>gateway_ac_id<空格>disable<空格>ssid<空格>encryption<空格>key<空格>ssid_hidden 
 
-    Pong <> | <> command_id <> | <> command_string
-    
-[COMMMAND STRING:]
-
-  accmd_setwireless <> command_id <> gateway_ac_id <> disable <> ssid <> encryption <> key <> ssid_hidden 
-   
-[value:]
-   
-disable: {0 | 1 | NULL}
-
-ssid: {ssid | NULL}
-
-encryption: {none | psk2 | psk | NULL}
-
-key: {password | NULL}
-
-ssid_hidden: {0 | 1 | NULL}
+3、参数说明：
+            command_id: 命令ID，取值为字符串
+         gateway_ac_id: 网关ID，取值为字符串
+               disable: 无线开关，取值 0 或 1， 0 开启， 1 关闭
+                  ssid: WIFI 的广播名称，取值为字符串
+            encryption: 加密方式，取值为 {none|psk|psk2}, 其中， 取值 none 为开放状态，即无线连接不需要密码   
+                   key: 密码字符串，建议长度不少于 8
+           ssid_hidden: 是否隐藏WIFI的广播名称，取值 0 或 1， 0 不隐藏， 1 隐藏
+         
++++++++++++++++++++++++++++++++++++++++++
 
 
 
-===================================
-4.[Offline user command]
-===================================
+===========================================================
+  【命令】： 使通过认证的用户下线(此命令要求AP配置有simple wifidog)
+===========================================================
 
-[FORMAT:]
 
-    Pong <> | <> command_id <> | <> command_string
-    
-[COMMMAND STRING:]
+1、命令名称：
+           accmd_setwireless
+           
+2、命令格式：
+           accmd_setwireless<空格>command_id<空格>gateway_ac_id<空格>"mac1 mac3 mac3 ..."   
 
-  accmd_updatelist <> command_id <> gateway_ac_id <> "mac1 mac3 mac3 ..." 
-   
-[value:]
+3、参数说明：
+            command_id: 命令ID，取值为字符串
+         gateway_ac_id: 网关ID，取值为字符串
+  "mac1 mac3 mac3 ...": 要下线的 MAC 地址列表，MAC 中的字母要求为小写，如 "ac:cf:85:5f:4d:bd  40:a5:ef:83:cd:b9"
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 

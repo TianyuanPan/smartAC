@@ -53,7 +53,6 @@ typedef enum {
     oAcServPingPath,
     oAcServResultPath,
     oCheckInterval,
-    oSyslogFacility,
     oPopularServers,
     oIsHaveWifidog,
     oWifidogPath
@@ -74,7 +73,6 @@ static const struct {
     "GatewayAcInterface",oGwAcInterface},{
     "ArpTablePath", oArpTable}, {
     "CheckInterval", oCheckInterval}, {
-    "SyslogFacility", oSyslogFacility}, {
     "SmartAcServer", oAcServer}, {
     "Hostname", oAcServHostname}, {
     "PopularServers", oPopularServers}, {
@@ -411,9 +409,6 @@ config_read(const char *filename)
                 case oDebugLevel:
                 	sscanf(p1, "%d", &config.debuglevel);
                 	break;
-                case oSyslogFacility:
-                    sscanf(p1, "%d", &debugconf.syslog_facility);
-                    break;
                 case oBadOption:
                     /* FALL THROUGH */
                 default:

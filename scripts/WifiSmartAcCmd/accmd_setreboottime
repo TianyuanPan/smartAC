@@ -55,6 +55,6 @@ fi
 
 gw_date=$(date "+%Y-%m-%d %H:%M:%S")
 
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set reboot time success.\",\"data\":{\"reboot_info\":\"$4:$3\",\"gw_ac_time\":\"$gw_date\"}}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set reboot time success.\",\"data\":{\"rebootTime\":\"$3:$4\",\"gw_ac_time\":\"$gw_date\"}}"
 
 

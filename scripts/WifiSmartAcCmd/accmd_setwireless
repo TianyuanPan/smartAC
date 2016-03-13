@@ -43,6 +43,11 @@ WIFI_ENCRYPTION=""
 WIFI_KEY=""
 WIFI_SSID_HIDDEN=""
 
+#
+# 7620 or 9341
+#
+CPU_ARCH=9341
+
 if [ $# != 7 ];then
    ErrorMessage $1 $2 "Set wireless parameter Error."
    exit 1
@@ -88,7 +93,17 @@ if [ "$WIFI_SSID_HIDDEN" == "NULL" ];then
 
 fi
 
-uci set wireless.radio0.disabled=$WIFI_DISABLED
+radio=$(uci show wireless|grep ra|grep disable|awk -F "." '{print $2}')
+case $radio in
+    "ra0")
+          uci set wireless.ra0.disabled=$WIFI_DISABLED
+         ;;
+    "radio0")
+          uci set wireless.radio0.disabled=$WIFI_DISABLED
+         ;;
+     *) exit 1;;
+esac
+
 uci set wireless.@wifi-iface[0].ssid=$WIFI_SSID
 uci set wireless.@wifi-iface[0].encryption=$WIFI_ENCRYPTION
 uci set wireless.@wifi-iface[0].key=$WIFI_KEY
@@ -101,8 +116,18 @@ return $?
 
 wireless_restart()
 {
-/bin/ubus call network reload &> /dev/null
-return $?
+case $CPU_ARCH in
+    7620)
+          wifi reload &> /dev/null
+          return $?
+         ;;
+    9341)
+        /bin/ubus call network reload &> /dev/null
+        return $?
+         ;;
+     *) return 1;;
+esac
+
 }
 
 
@@ -118,7 +143,19 @@ ssid=$(uci get wireless.@wifi-iface[0].ssid)
 encryption=$(uci get wireless.@wifi-iface[0].encryption)
 key=$(uci get wireless.@wifi-iface[0].key)
 hidden=$(uci get wireless.@wifi-iface[0].hidden)
-disable=$(uci get wireless.radio0.disabled)
+
+radio=$(uci show wireless|grep ra|grep disable|awk -F "." '{print $2}')
+case $radio in
+    "ra0")
+          disable=$(uci get wireless.ra0.disabled)
+         ;;
+    "radio0")
+          disable=$(uci get wireless.radio0.disabled)
+         ;;
+     *)disable="";;
+esac
+
+
 
 if [ "$disable" == "" ];then
     disable=0

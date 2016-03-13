@@ -222,15 +222,17 @@ static void  main_loop(void)
 		exit(1);
 	}
 
-    if (update_ac_information(opt_type[OPT_T_INIT_CHAIN]) != 0){
-    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_INIT_CHAIN]) error!");
-    }
-    if (update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) != 0){
-    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
-    }
 
     /* Init the signals to catch chld/quit/etc */
     init_signals();
+
+    /* Init the ac info */
+    if (update_ac_information(opt_type[OPT_T_INIT_CHAIN]) != 0){
+    	debug(LOG_WARNING, "at main_loop, update_ac_information(opt_type[OPT_T_INIT_CHAIN]) error!");
+    }
+    if (update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) != 0){
+    	debug(LOG_WARNING, "at main_loop, update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
+    }
 
     /* Start heartbeat thread */
     result = pthread_create(&tid_ping, NULL, (void *)thread_ping, NULL);

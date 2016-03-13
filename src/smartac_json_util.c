@@ -19,16 +19,25 @@
 
 #include "smartac_json_util.h"
 
-
+/*
+ * @brief client_list 和 traffic_list 的全局指针
+ */
 client_list   *c_list;
 traffic_list  *t_list;
 
+
+/* @brief 流量更新统计的操作类型 */
 const char *opt_type[] = {
 		{"init_chain"},
 		{"chain_clean_up"},
 		{"traffic_update"}
 };
 
+/*
+ * @brief: 初始化连接客户端列表函数,通过读取目标文件获取客户端信息构造链表。
+ * @client_list *list: 指向构造的链表指针
+ * @const char *dhcp_leases_file: 需要读取的目标文件指针
+ * */
 int init_client_list(client_list *list, const char *dhcp_leases_file)
 {
 	FILE *fp;
@@ -66,9 +75,22 @@ int init_client_list(client_list *list, const char *dhcp_leases_file)
 			pre = head;
 		}
 
-		sprintf(head->c_mac, "%s", seg[1]);
-		sprintf(head->c_ip, "%s", seg[2]);
-		sprintf(head->c_hostname, "%s", seg[3]);
+		if (seg[1])
+		    sprintf(head->c_mac, "%s", seg[1]);
+		else
+			memset(head->c_mac, 0, 18);
+		if (seg[2])
+		    sprintf(head->c_ip, "%s", seg[2]);
+		else
+			memset(head->c_ip, 0, 16);
+		if (seg[3])
+		    sprintf(head->c_hostname, "%s", seg[3]);
+		else
+			memset(head->c_hostname, 0, 64);
+		head->come_speed = 0;
+		head->go_speed = 0;
+		head->incoming = 0;
+		head->outgoing = 0;
 		head->next = NULL;
 		head = head->next;
 
@@ -81,7 +103,10 @@ int init_client_list(client_list *list, const char *dhcp_leases_file)
 }
 
 
-
+/*
+ * @brief: 释放init_client_list函数分配的内存空间
+ * @client_list *list: 指向需要释放的内存地址指针
+ * */
 void  destory_client_list(client_list *list)
 {
 	client_list *p1,*p2;
@@ -171,7 +196,11 @@ client_list *find_client_by_mac_ip(client_list *list, const char *mac, const cha
 
 
 
-
+/*
+ * @brief: 初始化客户端传输信息列表函数，通过读取目标文件获取客户端传输信息构造链表。
+ * @traffic_list *list:	指向构造的链表指针
+ * @const char *traffic_file:	需要读取的目标文件指针
+ * */
 int init_traffic_list(traffic_list *list, const char *traffic_file)
 {
 	FILE *fp;
@@ -210,11 +239,20 @@ int init_traffic_list(traffic_list *list, const char *traffic_file)
 			pre = head;
 		}
 
-		sprintf(head->traffic_ip, "%s", seg[0]);
-		head->incoming = atoll(seg[1]);
-		head->outgoing = atoll(seg[2]);
-		head->come_speed = atoi(seg[3]);
-		head->go_speed = atoi(seg[4]);
+		if (seg[0])
+		   sprintf(head->traffic_ip, "%s", seg[0]);
+		if (seg[1])
+		   head->incoming = atoll(seg[1]);
+		else head->incoming = 0;
+		if (seg[2])
+		   head->outgoing = atoll(seg[2]);
+		else head->outgoing = 0;
+		if (seg[3])
+		   head->come_speed = atoi(seg[3]);
+		else head->come_speed = 0;
+		if (seg[4])
+		   head->go_speed = atoi(seg[4]);
+		else head->go_speed = 0;
 		head->next = NULL;
 		head = head->next;
 
@@ -226,7 +264,11 @@ int init_traffic_list(traffic_list *list, const char *traffic_file)
 }
 
 
-
+/*
+ * @brief:	通过ip地址查找客户端传输信息链表
+ * @traffic_list *list:	指向目标客户端传输信息链表
+ * @const char *ip:	指向需要查找的ip地址
+ * */
 traffic_list *find_traffic_by_ip(traffic_list *list, const char *ip)
 {
 	traffic_list *ptr = NULL;
@@ -244,7 +286,10 @@ traffic_list *find_traffic_by_ip(traffic_list *list, const char *ip)
 }
 
 
-
+/*
+ * @brief: 释放init_traffic_list函数分配的内存空间
+ * @traffic_list *list: 指向需要释放的内存地址指针
+ * */
 void  destory_traffic_list(traffic_list *list)
 {
 	traffic_list *p1,*p2;
@@ -258,7 +303,11 @@ void  destory_traffic_list(traffic_list *list)
 }
 
 
-
+/*
+ * @brief:	将客户端传输信息链表与客服端信息链表结合
+ * @client_list *c_list:	指向被结合的客户端信息链表
+ * @traffic_list *t_list:	指向需要结合的客户端传输信息链表
+ * */
 void  get_traffic_to_client(client_list *c_list, traffic_list *t_list)
 {
 	client_list  *c_p;
@@ -289,7 +338,11 @@ void  get_traffic_to_client(client_list *c_list, traffic_list *t_list)
 	return;
 }
 
-
+/*
+ * @brief:	构造客户端信息json字符串
+ * @char *json:	指向构造json字符串指针
+ * @client_list *c_list:指向构造客户端信息json字符串所需的客户端构造链表指针
+ * */
 int  get_client_list_json(char *json, client_list *c_list)
 {
 	char tmp[MAX_STRING_LEN] = {0},
@@ -329,7 +382,11 @@ int  get_client_list_json(char *json, client_list *c_list)
 }
 
 
-
+/*
+ * @brief:	构造设备信息json字符串
+ * @char *json2:	指向构造的设备信息json字符串指针
+ * const char *device_info_file: 指向存储设备信息的文件指针
+ * */
 int  get_device_info_json(char *json, const char *device_info_file)
 {
      FILE *fp;

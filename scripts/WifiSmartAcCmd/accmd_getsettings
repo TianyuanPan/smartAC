@@ -87,6 +87,6 @@ fi
 
 
 
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"disable\":$int_wifi_disable,\"ssid\":\"$str_wifi_ssid\",\"ssidHidden\":$int_wifi_ssidHidden,\"encryption\":\"$str_wifi_encryption\",\"key\":\"$str_wifi_key\",\"ipAddress\":\"$str_lan_ipAddress\",\"ipMask\":\"$str_lan_ipMask\",\"ignore\":$int_dhcp_ignore,\"start\":$int_dhcp_start,\"limit\":$int_dhcp_limit,\"leaseTime\":\"$str_dhcp_leaseTime\",\"autoReboot\":$int_sys_autoReboot,\"rebootTime\":\"$str_sys_rebootTime\"}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Get settings success.\",\"data\":{\"disable\":$int_wifi_disable,\"ssid\":\"$str_wifi_ssid\",\"ssidHidden\":$int_wifi_ssidHidden,\"encryption\":\"$str_wifi_encryption\",\"key\":\"$str_wifi_key\",\"ipAddress\":\"$str_lan_ipAddress\",\"ipMask\":\"$str_lan_ipMask\",\"ignore\":$int_dhcp_ignore,\"start\":$int_dhcp_start,\"limit\":$int_dhcp_limit,\"leaseTime\":\"$str_dhcp_leaseTime\",\"autoReboot\":$int_sys_autoReboot,\"rebootTime\":\"$str_sys_rebootTime\"}}"
 
 

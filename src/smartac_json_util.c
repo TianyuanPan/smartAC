@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <syslog.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -51,8 +51,10 @@ int init_client_list(client_list *list, const char *dhcp_leases_file)
 
 	fp = fopen(dhcp_leases_file, "r");
 
-	if (!fp)
+	if (!fp){
+		debug(LOG_ERR, "at init_client_list(...), fopen(...) error.");
 		return -1;
+	}
 
 	head = list;
 	pre  = list;
@@ -69,6 +71,7 @@ int init_client_list(client_list *list, const char *dhcp_leases_file)
 			if(!head){
 				fclose(fp);
 				destory_client_list(list);
+				debug(LOG_ERR, "at init_client_list(...), malloc error.");
 				return -1;
 			}
 			pre->next = head;
@@ -117,6 +120,8 @@ void  destory_client_list(client_list *list)
 		free(p1);
 		p1 = p2;
 	}
+
+	list = NULL;
 }
 
 
@@ -215,8 +220,10 @@ int init_traffic_list(traffic_list *list, const char *traffic_file)
 
 	fp = fopen(traffic_file, "r");
 
-	if (!fp)
+	if (!fp){
+		debug(LOG_ERR, "at init_traffic_list(...), fopen(...) error.");
 		return -1;
+	}
 
 	head = list;
 	pre  = list;
@@ -233,6 +240,7 @@ int init_traffic_list(traffic_list *list, const char *traffic_file)
 			if(!head){
 				fclose(fp);
 				destory_traffic_list(list);
+				debug(LOG_ERR, "at init_traffic_list(...), malloc error.");
 				return -1;
 			}
 			pre->next = head;
@@ -300,6 +308,8 @@ void  destory_traffic_list(traffic_list *list)
 		free(p1);
 		p1 = p2;
 	}
+
+	list = NULL;
 }
 
 
@@ -437,6 +447,7 @@ int  get_dog_json_info(char *json, const char *wdctl)
 	fp = popen(wdctl, "r");
 
 	if (!fp){
+		debug(LOG_ERR, "at get_dog_json_info(...), popen(...) error.");
 		return -1;
 	}
 
@@ -481,6 +492,7 @@ int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list)
     ptr =  tmp + strlen(tmp);
 
     if ( get_device_info_json(tmp2, DEVICE_INFO_FILE) != 0) {
+    	debug(LOG_ERR, "at build_ping_json_data(...), get_device_info_json(...) error.");
     	return -1;
     }
 
@@ -491,6 +503,7 @@ int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list)
     memset(tmp2, 0, MAX_STRING_LEN);
 
     if ( get_client_list_json(tmp2, c_list) != 0) {
+    	debug(LOG_ERR, "at build_ping_json_data(...), get_client_list_json(...) error.");
     	return -1;
     }
 
@@ -504,6 +517,7 @@ int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list)
     	sprintf(wdctl, "%swdctl status", config->wifidog_path);
     	if (get_dog_json_info(tmpdog, wdctl) != 0){
     		sprintf(ptr, ",\"wifidog_status\":%s", "{}}");
+    		debug(LOG_ERR, "at build_ping_json_data(...), get_dog_json_info(...) error.");
     		goto out;
     	}
         sprintf(ptr, ",%s}", tmpdog);
@@ -528,6 +542,7 @@ int update_ac_information(const char *opt_type)
 	fp = popen(cmd, "r");
 
 	if (!fp){
+		debug(LOG_ERR, "at update_ac_information(...), popen(...) error.");
 		return -1;
 	}
 

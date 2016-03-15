@@ -69,6 +69,7 @@ int init_client_list(client_list *list, const char *dhcp_leases_file);
  * */
 void  destory_client_list(client_list *list);
 
+
 client_list *find_client_by_ip(client_list *list, const char *ip);
 
 client_list *find_client_by_mac(client_list *list, const char *mac);
@@ -119,9 +120,12 @@ int  get_client_list_json(char *json, client_list *c_list);
  * */
 int  get_device_info_json(char *json, const char *device_info_file);
 
+
 int  get_dog_json_info(char *json, const char *wdctl);
 
+
 int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list);
+
 
 int update_ac_information(const char *opt_type);
 

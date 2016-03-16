@@ -41,7 +41,7 @@ void thread_post_result(void *args)
 
     ac_server = get_ac_server();
 
-    debug(LOG_DEBUG, "Entering post result()");
+    debug(LOG_INFO, "Entering post result()");
     memset(request, 0, sizeof(request));
 
     if(!args)
@@ -75,7 +75,7 @@ void thread_post_result(void *args)
     cmdresult_free(result);
     result = NULL;
 
-    debug(LOG_DEBUG,"\n=== post request: ===\n%s===", request);
+    debug(LOG_DEBUG,"=== post request:\n %s  \n===========", request);
     /*
      * The ping thread does not really try to see if the auth server is actually
      * working. Merely that there is a web server listening at the port. And that

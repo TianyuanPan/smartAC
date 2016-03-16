@@ -1,19 +1,33 @@
 #!/bin/sh
+#########################################
 #
+# 作 者：潘田园
+# 日 期：2016-03-04
+# 版 本：
 #
+# 脚本描述：
+#	设置路由器的 DHCP 服务信息
 #
-##########################
+##########################################
 
 
-#
-# $(1): cmd id
+###########################################################################
+# $(1): cmd_id
 # $(2): gw_ac_id
-# $(3): dhcp IP start 
-# $(4): dhcp IP limit numbers
-# $(5): dhcp leasetime min:2m, normal:12h
-# $(6): dhcp switch, 0 OPEN dhcp, 1 CLOSE dhcp
+# $(3): dhcp_IP_start 
+# $(4): dhcp_IP_limit numbers
+# $(5): dhcp_leasetime min:2m, normal:12h
+# $(6): dhcp_switch, 0 OPEN dhcp, 1 CLOSE dhcp
 #
+# 参数说明：
+#	cmd_id:          命令ID
+#	gw_ac_id:        网关ID
+#	dhcp_IP_start:   dhcp 的开始地址
+#	dhcp_IP_limit:   dhcp 地址容量
+#	dhcp_leasetime:  IP地址的租期时间， 最小 2 分钟
+#	dhcp_switch:     dhcp 开关， 值为 0 开启dhcp， 值为 1 关闭 dhcp
 #
+###########################################################################
 
 start=$3
 limit=$4
@@ -82,7 +96,7 @@ fi
 
 info="Set DHCP Success."
 
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"$info\",\"dhcp\":{\"start\":$start,\"limit\":$limit,\"leasetime\":\"$leasetime\",\"ignore\":$ignore}}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"$info\",\"data\":{\"start\":$start,\"limit\":$limit,\"leasetime\":\"$leasetime\",\"ignore\":$ignore}}"
 
 
 

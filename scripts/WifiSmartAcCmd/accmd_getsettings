@@ -15,56 +15,78 @@
 
 . /usr/bin/accmd_common
 
-TMP=/tmp/.tmpfile_ac
-STMP=/tmp/.stmpfile_ac
-RESULT_FILE=/tmp/.routersettings_ac
-RESULT=""
-echo "" > $RESULT_FILE
-#RESULT="$RESULT$(echo "{\"gw_ac_id\":\"$1\",\"cmd_id\":\"$2\",\"type\":\"getsettings\",")"
-RESULT="$RESULT$(echo "{\"gw_id\":\"$2\",\"cmd_id\":\"$1\",\"status\":true,\"info\":\"command is get ap settings\",")"
-RESULT="$RESULT$(echo "\"result\":{\"wireless\":{")"
-uci show wireless > $TMP
-while read line;do echo $line>$STMP; RESULT="$RESULT$(awk -F "=" '{print "\""$1"\":","\""$2"\"," }'<$STMP)";done < $TMP
-RESULT=${RESULT%,}
-RESULT="$RESULT},\"lan\":{"
-uci show network.lan > $TMP
-while read line;do echo $line>$STMP; RESULT="$RESULT$(awk -F "=" '{print "\""$1"\":","\""$2"\"," }'<$STMP)";done < $TMP
-RESULT=${RESULT%,}
-RESULT="$RESULT},\"wan\":{"
-uci show network.wan > $TMP
-while read line;do echo $line>$STMP; RESULT="$RESULT$(awk -F "=" '{print "\""$1"\":","\""$2"\"," }'<$STMP)";done < $TMP
-RESULT=${RESULT%,}
-RESULT="$RESULT},\"dhcp\":{"
-uci show dhcp > $TMP
-while read line;do echo $line>$STMP; RESULT="$RESULT$(awk -F "=" '{print "\""$1"\":","\""$2"\"," }'<$STMP)";done < $TMP
-RESULT=${RESULT%,}
-RESULT="$RESULT},\"reboot_info\":\"`cat /etc/crontabs/root | grep -E "reboot" | awk '{print $2" :",$1}'`\","
 
-#RESULT="$RESULT\"trustedMacList\":[$(uci get wifidog_conf.trustedMACList.TrustedMACList | awk '{for(i=1;i<=NF;i++) print "\""$i"\","}')"
-#RESULT=${RESULT%,}],
-#RESULT="$RESULT\"untrustedMacList\":[$(uci get wifidog_conf.untrustedMACList.UntrustedMACList | awk '{for(i=1;i<=NF;i++) print "\""$i"\","}')"
-#RESULT=${RESULT%,}],
-#RESULT="$RESULT\"WhiteList\":[$(uci get wifidog_conf.whiteBlackList.WhiteList | awk '{for(i=1;i<=NF;i++) print "\""$i"\","}')"
-#RESULT=${RESULT%,}],
-#RESULT="$RESULT\"BlackList\":[$(uci get wifidog_conf.whiteBlackList.BlackList | awk '{for(i=1;i<=NF;i++) print "\""$i"\","}')"
-#RESULT=${RESULT%,}]}}
-
-RESULT=${RESULT%,}}}
-
-rm $TMP $STMP
-echo $RESULT > $RESULT_FILE
-
-ret=$?
-
-if [ $ret != 0 ];then
-    ErrorMessage $1 $2 "Get ap settings error."
-    exit 1
+##
+# wifi info
+##
+int_wifi_disable=$(uci get wireless.radio0.disabled)
+if [ -z "$int_wifi_disable" ]
+then
+  int_wifi_disable=0
 fi
-#####
-#    delete the single quote ' character,because some uci version will echo ' to the file.
-#
-sed -i 's/'\''//g'  $RESULT_FILE
 
-echo "$(cat $RESULT_FILE)"
+str_wifi_ssid=$(uci get wireless.@wifi-iface[0].ssid)
+
+int_wifi_ssidHidden=$(uci get wireless.@wifi-iface[0].hidden)
+if [ -z "$int_wifi_ssidHidden" ]
+then
+  int_wifi_ssidHidden=0
+fi
+
+str_wifi_encryption=$( uci get wireless.@wifi-iface[0].encryption)
+str_wifi_key=$(uci get wireless.@wifi-iface[0].key)
+
+
+#
+# lan info
+#
+str_lan_ipAddress=$(uci get network.lan.ipaddr)
+str_lan_ipMask=$(uci get network.lan.netmask)
+
+#
+# dhcp info
+#
+int_dhcp_ignore=$(uci get dhcp.lan.ignore)
+if [ -z $int_dhcp_ignore ]
+then
+   int_dhcp_ignore=0
+fi
+
+int_dhcp_start=$(uci get dhcp.lan.start)
+if [ -z $int_dhcp_start ]
+then
+   int_dhcp_start=100
+fi
+
+int_dhcp_limit=$(uci get dhcp.lan.limit)
+if [ -z $int_dhcp_limit ]
+then
+   int_dhcp_limit=50
+fi
+
+str_dhcp_leaseTime=$(uci get dhcp.lan.leasetime)
+
+
+#
+# auto boot inifo
+#
+crontabs=$(cat /etc/crontabs/root|grep reboot)
+if [ -z $str_sys_rebootTime ]
+then
+   str_sys_rebootTime=""
+else
+   str_sys_rebootTime="$(cat /etc/crontabs/root|grep reboot|awk '{print $2,":",$1}')"
+fi
+
+if [ -z $str_sys_rebootTime ]
+then
+   int_sys_autoReboot=0
+else
+   int_sys_autoReboot=1
+fi
+
+
+
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Get settings success.\",\"data\":{\"disable\":$int_wifi_disable,\"ssid\":\"$str_wifi_ssid\",\"ssidHidden\":$int_wifi_ssidHidden,\"encryption\":\"$str_wifi_encryption\",\"key\":\"$str_wifi_key\",\"ipAddress\":\"$str_lan_ipAddress\",\"ipMask\":\"$str_lan_ipMask\",\"ignore\":$int_dhcp_ignore,\"start\":$int_dhcp_start,\"limit\":$int_dhcp_limit,\"leaseTime\":\"$str_dhcp_leaseTime\",\"autoReboot\":$int_sys_autoReboot,\"rebootTime\":\"$str_sys_rebootTime\"}}"
 
 

@@ -1,30 +1,48 @@
 #!/bin/sh
+####################################################
 #
+# 作 者：潘田园
+# 日 期：2016-03-04
+# 版 本：
 #
-###############################
+# 脚本描述：
+#	 此脚本用于设置AP的自动重启动时间。
+#
+######################################################
 
 . /usr/bin/accmd_common
 
-#
+######################################################
 #
 # $(1) cmd_id
 # $(2) gw_ac_id
-# $(3) reboot minuts "mm"
-# $(4) reboot hours  "hh"
-# $(5) refrence date time "YYYY-MM-DD hh:mm:ss"
+# $(3) reboot_hours: "hh"
+# $(4) reboot_minuts:  "mm"
+# $(5) refrence_date_time: "YYYY-MM-DD hh:mm:ss"
 #
+# 参数说明：
+#       cmd_id： 命令id
+#	gw_ac_id： 网关id
+#	reboot_hours：重启时
+#	reboot_minuts: 重启分
+#	refrence_date_time:日期时间同步参考值
 #
+#####################################################
 
+##############################################
+# 当参数不满足要求时，取消自动重启定时
+##############################################
 if [ $# != 5 ];then
-   ErrorMessage $1 $2 "Set reboot time parameter error."
-   exit 1
+   echo "" > /etc/crontabs/root
+   SuccessMessage $1 $2 "Close auto reboot."
+   exit 0
 fi
 
 date -s "$5" &> /dev/null
 
 ret1=$?
 
-echo "$3 $4 * * * reboot" > /etc/crontabs/root
+echo "$4 $3 * * * reboot" > /etc/crontabs/root
 
 ret2=$?
 
@@ -37,6 +55,6 @@ fi
 
 gw_date=$(date "+%Y-%m-%d %H:%M:%S")
 
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set reboot time success.\",\"reboot_info\":\"$4:$3\",\"gw_ac_time\":\"$gw_date\"}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set reboot time success.\",\"data\":{\"rebootTime\":\"$3:$4\",\"gw_ac_time\":\"$gw_date\"}}"
 
 

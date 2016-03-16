@@ -1,0 +1,118 @@
+#!/bin/sh
+####################################
+
+
+
+######################################
+#
+# $(1)    cmd_id:
+# $(2)  gw_ac_id:
+# $(3) interface:  lan | wan
+# $(4)     proto: dhcp | static
+# $(5)        ip:
+# $(6)   netmask:
+# $(7) "dns1 dns2 ...":
+#
+#####################################
+
+
+INTERFACE=$3
+PROTO=$4
+IP=$5
+NETMASK=$6
+DNS=$7
+
+. /usr/bin/accmd_common
+
+
+check_paramter()
+{
+  if [ $# -lt 4 ]
+  then
+      ErrorMessage $1 $2 "ERROR: Set network paramter error."
+      exit 1
+  fi
+  
+  if [ $PROTO == "static" ]
+  then
+     if [ $# -lt 6 ]
+     then
+        ErrorMessage $1 $2 "ERROR: Set network paramter error."
+        exit 1
+     fi
+  fi
+  
+}
+
+set_wan()
+{
+  if [ "$PROTO" == "dhcp" ]
+  then
+      uci set network.wan.proto=dhcp
+      uci commit network
+      return 0
+  else
+     uci set network.wan.proto=static
+     uci set network.wan.ipaddr=$IP
+     uci set network.wan.netmask=$NETMASK
+     uci commit network
+     return 0
+  fi
+}
+
+
+set_lan()
+{
+  if [ "$PROTO" == "dhcp" ]
+  then
+      uci set network.lan.proto=dhcp
+      uci commit network
+      return 0
+  else
+     uci set network.lan.proto=static
+     uci set network.lan.ipaddr=$IP
+     uci set network.lan.netmask=$NETMASK
+     uci commit network
+     return 0
+  fi
+}
+
+
+main_operator()
+{
+   case "$INTERFACE" in
+     "wan") set_wan
+            if [ $? -eq 0 ]
+            then
+              echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":false,\"info\":\"Set wan success.重启动生效\", \"data\":{\"ipAddress\":\"$IP\",\"ipMask\":\"$NETMASK\"}}"
+              return 0
+            fi
+            ErrorMessage $1 $2 "ERROR: Set wan error"
+            return 0
+           ;;
+      "lan") set_lan
+             if [ $? -eq 0 ]
+             then
+                echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":false,\"info\":\"Set lan success. 重启动生效\", \"data\":{\"ipAddress\":\"$IP\",\"ipMask\":\"$NETMASK\"}}"
+                return 0
+             fi
+             ErrorMessage $1 $2 "ERROR: Set lan error"
+             return 0
+          ;;
+          *) ErrorMessage $1 $2 "ERROR: Set network internal error"
+             return 1
+           ;;
+     esac
+}
+
+check_paramter $1 $2 $INTERFACE $PROTO $IP $NETMASK $DNS
+main_operator $1 $2 $INTERFACE $PROTO $IP $NETMASK $DNS
+
+if [ $? -eq 0 ]
+then
+   /etc/init.d/network reload &> /dev/null
+fi
+
+
+
+

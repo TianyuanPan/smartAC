@@ -57,15 +57,18 @@ extern client_list   *c_list;
 extern traffic_list  *t_list;
 
 /*
- * @brief: ------------------------------------
- *         fdafafa
- * @list:  ----
- * @dhcp_lease_file: ----
- * @return value: ---
+ * @brief: 初始化连接客户端列表函数,通过读取目标文件获取客户端信息构造链表。
+ * @client_list *list: 指向构造的链表指针
+ * @const char *dhcp_leases_file: 需要读取的目标文件指针
  * */
 int init_client_list(client_list *list, const char *dhcp_leases_file);
 
+/*
+ * @brief: 释放init_client_list函数分配的内存空间
+ * @client_list *list: 指向需要释放的内存地址指针
+ * */
 void  destory_client_list(client_list *list);
+
 
 client_list *find_client_by_ip(client_list *list, const char *ip);
 
@@ -76,22 +79,53 @@ client_list *find_client_by_hostname(client_list *list, const char *hostname);
 client_list *find_client_by_mac_ip(client_list *list, const char *mac, const char *ip);
 
 
+/*
+ * @brief: 初始化客户端传输信息列表函数，通过读取目标文件获取客户端传输信息构造链表。
+ * @traffic_list *list:	指向构造的链表指针
+ * @const char *traffic_file:	需要读取的目标文件指针
+ * */
 int init_traffic_list(traffic_list *list, const char *traffic_file);
 
+/*
+ * @brief:	通过ip地址查找客户端传输信息链表
+ * @traffic_list *list:	指向目标客户端传输信息链表
+ * @const char *ip:	指向需要查找的ip地址
+ * */
 traffic_list *find_traffic_by_ip(traffic_list *list, const char *ip);
 
+/*
+ * @brief: 释放init_traffic_list函数分配的内存空间
+ * @traffic_list *list: 指向需要释放的内存地址指针
+ * */
 void  destory_traffic_list(traffic_list *list);
 
+/*
+ * @brief:	将客户端传输信息链表与客服端信息链表结合
+ * @client_list *c_list:	指向被结合的客户端信息链表
+ * @traffic_list *t_list:	指向需要结合的客户端传输信息链表
+ * */
 void  get_traffic_to_client(client_list *c_list, traffic_list *t_list);
 
-
+/*
+ * @brief:	构造客户端信息json字符串
+ * @char *json:	指向构造json字符串指针
+ * @client_list *c_list:	指向构造客户端信息json字符串所需的客户端构造链表指针
+ * */
 int  get_client_list_json(char *json, client_list *c_list);
 
+/*
+ * @brief:	构造设备信息json字符串
+ * @char *json2:	指向构造的设备信息json字符串指针
+ * const char *device_info_file: 指向存储设备信息的文件指针
+ * */
 int  get_device_info_json(char *json, const char *device_info_file);
+
 
 int  get_dog_json_info(char *json, const char *wdctl);
 
+
 int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list);
+
 
 int update_ac_information(const char *opt_type);
 

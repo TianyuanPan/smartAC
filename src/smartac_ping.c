@@ -90,7 +90,7 @@ static void  ping(void)
     /* data collecting start here */
 
     if ( update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) != 0){
-    	debug(LOG_ERR, "at ping(), update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
+    	debug(LOG_WARNING, "at ping(), update_ac_information(opt_type[OPT_T_TRAFFIC_UPDATE]) error!");
     }
 
     c_list = (client_list *)malloc(sizeof (client_list));
@@ -102,13 +102,18 @@ static void  ping(void)
     t_list = (traffic_list *)malloc(sizeof (traffic_list));
     if (!t_list){
     	debug(LOG_ERR, "at ping(), t_list malloc() error.");
-    	free(c_list);
+    	destory_client_list(c_list);
     	return;
     }
 
-    if (init_client_list(c_list, DHCP_LEASES_FILE) !=0 ||
-    		init_traffic_list(t_list, TRAFFIC_FILE) !=0){
-    	debug(LOG_ERR, "at ping(), init_client_list or init_traffic_list error.");
+    if (init_client_list(c_list, DHCP_LEASES_FILE) !=0){
+    	debug(LOG_ERR, "at ping(), init_client_list error.");
+    	return;
+    }
+
+    if (init_traffic_list(t_list, TRAFFIC_FILE) !=0){
+    	debug(LOG_ERR, "at ping(), init_traffic_list error.");
+    	destory_client_list(c_list);
     	return;
     }
 
@@ -127,9 +132,9 @@ static void  ping(void)
 	/* data collecting stop here */
 
     snprintf(request, sizeof(request) - 1,
-             "POST %s HTTP/1.0\r\n"
+             "POST %s HTTP/1.1\r\n"
              "User-Agent: WiFiAcVer %s\r\n"
-   		     "Content-Type: text/json;charset=utf-8\r\n"
+   		     "Content-Type: application/json;charset=utf-8\r\n"
    		     "Content-Length: %d\r\n"
    		     "Connection: close\r\n"
              "Host: %s\r\n"
@@ -181,7 +186,8 @@ static void  ping(void)
 	}else{
 		cmdptr = get_remote_shell_command(++cmdptr);
 		if (cmdptr){
-			excute_remote_shell_command(config_get_config()->gw_ac_id, cmdptr);
+			if (excute_remote_shell_command(config_get_config()->gw_ac_id, cmdptr) != 0)
+				debug(LOG_ERR, "at ping(), excute_remote_shell_command(...) error.");
 		}
 	}
 

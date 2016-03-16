@@ -7,8 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <syslog.h>
 
 #include "smartac_util.h"
+#include "smartac_debug.h"
 
 
 #include "smartac_do_command.h"
@@ -46,7 +48,7 @@ FILE_T * excute_open(const char *command, const char *mode)
 
 	sprintf(cmd_line, "%s > %s", command, pft->name);
 
-	printf("===\n cmd_line: %s\n===\n", cmd_line);
+	debug(LOG_INFO, "remote command line: %s", cmd_line);
 
 	if (execute(cmd_line, 1) != 0){
 		remove(pft->name);
@@ -95,7 +97,8 @@ int init_excute_outdir()
 {
 	char cmd_line[128];
 	sprintf(cmd_line,"rm -rf %s;mkdir %s", PREFIX, PREFIX);
-	if (execute(cmd_line, 1) != 0)
+	if (execute(cmd_line, 1) != 0){
 		return -1;
+	}
 	return 0;
 }

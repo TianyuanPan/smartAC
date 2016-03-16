@@ -10,7 +10,7 @@ OBJS = main.o smartac.o smartac_commandline.o \
        smartac_version.o smartac_json_util.o
 
 TARGET_WDCTL = wifiSmartac_update_doglist
-TARGET_WDCTL_OBJS = smartac_wdctl_update_list.o
+TARGET_WDCTL_OBJS = smartac_wdctl_update_list.o smartac_debug.o
 
 all: $(TARGET)  $(TARGET_WDCTL)
 

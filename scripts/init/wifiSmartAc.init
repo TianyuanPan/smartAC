@@ -3,12 +3,25 @@
 # Mon Nov  2 10:00:54 CST 2015 created by GaomingPan
 #
 
-START=70
-STOP=60
+START=98
 
 start()
 {
-  /usr/bin/wifiSmartAc.sh &
+  sleep 30
+  /usr/bin/wifiSmartAc.sh 
+}
+
+
+restart()
+{
+  rst=`ps | grep wifiSmartAc | cut -d "r" -f 1`
+  if [ -n "$rst" ]
+   then
+    kill -9 $rst
+ fi
+ 
+ /usr/bin/wifiSmartAc.sh 
+ 
 }
 
 stop()
@@ -19,3 +32,7 @@ stop()
     kill -9 $rst
  fi
 }
+
+
+
+

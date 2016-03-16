@@ -42,6 +42,7 @@ define Package/WifiSmartAc/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setwireless $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_updatelist $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_update_mac_fw_tables $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_mac_set_white_black $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/wifiSmartAc.sh $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/update_ac_information.sh $(1)/usr/bin
 	

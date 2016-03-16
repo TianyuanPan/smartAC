@@ -20,10 +20,10 @@
 
 //#define  DEFAULT_GW_AC_IFACE       "eth0.1"
 
-#define  DEFAULT_DAEMON            1
-#define  DEFAULT_CHECK_INTERVAL    30
+#define  DEFAULT_DAEMON                 1
+#define  DEFAULT_CHECK_INTERVAL         30
 
-#define  DEFAULT_AC_SERVER_PORT    8080
+#define  DEFAULT_AC_SERVER_PORT         8080
 #define  DEFAULT_AC_SERVER_PING_PATH    "/smartac/ping?"
 #define  DEFAULT_AC_SERVER_RESULT_PATH  "/smartac/result?"
 

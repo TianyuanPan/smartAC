@@ -1,0 +1,89 @@
+#!/bin/sh
+#######################################
+
+
+
+
+
+
+#
+# $(1) cmd_id
+# $(2) gw_ac_id
+# $(3) conf_flag
+# $(4) sysfile_md5sum
+# $(5) sysfile_url
+#
+
+CMD_ID=$1
+ACGW_ID=$2
+CONFIG_FLAG=$3
+SYSFILE_MD5SUM=$4
+SYSFILE_URL=$5
+
+
+. /usr/bin/internal_common
+
+system_upgrade_bin=/usr/bin/internal_system_upgrade
+
+sysbin=$(echo "$SYSFILE_URL" | awk -F "/" '{print $NF}')
+
+if [ $# -ne 5 ]
+then
+    ErrorMessage $CMD_ID $ACGW_ID  "ERROR: system upgrade command parameter error."
+    exit 1
+fi
+
+
+
+check_sysfile_url()
+{
+   status=$(curl -I $SYSFILE_URL | grep HTTP | awk '{print $2}')
+   
+   if [ $status -ne 200 ]
+   then
+       ErrorMessage $CMD_ID $ACGW_ID  "ERROR: system file URL $status error."
+       exit 1
+   fi
+   
+   return 0
+}
+
+
+check_sysfile()
+{
+   mkdir /tmp/.sysfile
+   cd /tmp/.sysfile
+   wget $SYSFILE_URL
+   
+   md5sum=$(md5sum $sysbin | awk '{print $1}')
+   
+   if [ "$SYSFILE_MD5SUM" != "$md5sum" ]
+   then
+       ErrorMessage $CMD_ID $ACGW_ID  "ERROR: system file MD5SUM error."
+       exit 1
+   fi
+   
+   return 0   
+}
+
+
+sys_upgrade()
+{
+   cd /tmp/.sysfile
+   case $CONFIG_FLAG in
+     1) $system_upgrade_bin  -r  $sysbin  &> /dev/null &
+        SuccessMessage $CMD_ID $ACGW_ID  "System upgrade AND save config......"
+     ;;
+     *) $system_upgrade_bin  "  " $sysbin &> /dev/null &
+         SuccessMessage $CMD_ID $ACGW_ID  "System upgrade NOT save config......"
+     ;;
+   esac
+}
+
+
+check_sysfile_url
+check_sysfile
+sys_upgrade
+
+
+

@@ -22,7 +22,7 @@ IP=$5
 NETMASK=$6
 DNS=$7
 
-. /usr/bin/accmd_common
+. /usr/bin/internal_common
 
 
 check_paramter()
@@ -84,7 +84,7 @@ main_operator()
      "wan") set_wan
             if [ $? -eq 0 ]
             then
-              echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":false,\"info\":\"Set wan success.重启动生效\", \"data\":{\"ipAddress\":\"$IP\",\"ipMask\":\"$NETMASK\"}}"
+              echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set wan success.\", \"data\":{\"ipAddress\":\"$IP\",\"ipMask\":\"$NETMASK\"}}"
               return 0
             fi
             ErrorMessage $1 $2 "ERROR: Set wan error"
@@ -93,7 +93,7 @@ main_operator()
       "lan") set_lan
              if [ $? -eq 0 ]
              then
-                echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":false,\"info\":\"Set lan success. 重启动生效\", \"data\":{\"ipAddress\":\"$IP\",\"ipMask\":\"$NETMASK\"}}"
+                echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set lan success.\", \"data\":{\"ipAddress\":\"$IP\",\"ipMask\":\"$NETMASK\"}}"
                 return 0
              fi
              ErrorMessage $1 $2 "ERROR: Set lan error"
@@ -108,11 +108,15 @@ main_operator()
 check_paramter $1 $2 $INTERFACE $PROTO $IP $NETMASK $DNS
 main_operator $1 $2 $INTERFACE $PROTO $IP $NETMASK $DNS
 
-if [ $? -eq 0 ]
-then
-   /etc/init.d/network reload &> /dev/null
-fi
-
+#
+#
+#if [ $? -eq 0 ]
+#then
+#   /etc/init.d/network reload &> /dev/null
+#   /usr/bin/wdctl  restart    &> /dev/null
+#fi
+#
+#
 
 
 

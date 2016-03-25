@@ -37,7 +37,7 @@ CMD_ID=$1
 GW_AC_ID=$2
 DOG_FLAG=$3
 MAC_FLAG=$4
-MAC_LIST=$5
+MAC_LIST="$5"
 
 
 
@@ -197,6 +197,14 @@ cancel_white_mac_list()
 ###########################
 main_operation()
 {
+  if [ ! -f "$BLACK_MAC_LIST" ]
+  then
+    touch $BLACK_MAC_LIST
+  fi
+  if [ ! -f "$WHITE_MAC_LIST" ]
+  then
+    touch $WHITE_MAC_LIST
+  fi
   parameter_check
   ret=$?
   if [ $ret != 0 ]

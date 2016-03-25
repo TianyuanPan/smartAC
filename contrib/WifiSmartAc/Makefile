@@ -30,21 +30,23 @@ endef
 define Package/WifiSmartAc/install
 
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wifiSmartAc $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wifiSmartac_update_doglist $(1)/usr/bin	
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_common $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_collection $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_getsettings $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setdhcp $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_getsettings $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setnetwork $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setreboottime $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setwireless $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_updatelist $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_update_mac_fw_tables $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_mac_set_white_black $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/wifiSmartAc.sh $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/update_ac_information.sh $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wifiSmartAc                                       $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wifiSmartac_update_doglist                        $(1)/usr/bin	
+	
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/internal_common                $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_getsettings              $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_mac_set_white_black      $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setdhcp                  $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setnetwork               $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setreboottime            $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_setwireless              $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_updatelist               $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/internal_update_mac_fw_tables  $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/accmd_sysupgrade               $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/WifiSmartAcCmd/internal_system_upgrade        $(1)/usr/bin
+	
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/wifiSmartAc.sh                                $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/scripts/update_ac_information.sh                      $(1)/usr/bin
 	
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/wifismartac.conf $(1)/etc/wifismartac.conf

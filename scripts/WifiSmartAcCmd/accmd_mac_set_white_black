@@ -23,7 +23,7 @@
 ###############################################################
 
 
-. /usr/bin/accmd_common
+. /usr/bin/internal_common
 
 
 BLACK_MAC="$4"
@@ -33,21 +33,23 @@ ret=0
 reta=0
 retb=0
 
-if [ $BLACK_MAC != "NULL" ]
+COMMAND=/usr/bin/internal_update_mac_fw_tables
+
+if [ "$BLACK_MAC" != "NULL" ]
 then
-    /usr/bin/accmd_update_mac_fw_tables $1 $2 $3 black "$BLACK_MAC"  > /dev/null
+    $COMMAND $1 $2 $3 black "$BLACK_MAC"  > /dev/null
     reta=$?
 else
-    /usr/bin/accmd_update_mac_fw_tables $1 $2 $3 cancel_black  > /dev/null
+    $COMMAND $1 $2 $3 cancel_black  > /dev/null
     reta=$?
 fi
 
-if [ $WHITE_MAC != "NULL" ]
+if [ "$WHITE_MAC" != "NULL" ]
 then
-   /usr/bin/accmd_update_mac_fw_tables $1 $2 $3 white "$WHITE_MAC" > /dev/null
+   $COMMAND $1 $2 $3 white "$WHITE_MAC" > /dev/null
    retb=$?
 else
-   /usr/bin/accmd_update_mac_fw_tables $1 $2 $3 cancel_white > /dev/null
+   $COMMAND $1 $2 $3 cancel_white > /dev/null
    retb=$?
 fi
 

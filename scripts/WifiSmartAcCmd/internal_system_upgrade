@@ -1,0 +1,12 @@
+#!/bin/sh
+#########################
+
+
+#
+# $(1) option
+# $(2) system file
+#
+
+sleep 6
+/sbin/sysupgrade $1 $2
+

@@ -11,7 +11,7 @@
 #
 ##################################################
 
-. /usr/bin/accmd_common
+. /usr/bin/internal_common
 
 
 
@@ -172,6 +172,6 @@ if [ $? != 0 ];then
    exit 1
 fi
 
-echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set wireless success.\",\"data\":{\"ssid\":\"$ssid\",\"encryption\":\"$encryption\",\"key\":\"$key\",\"ssid_hidden\":$hidden,\"disable\":$disable}}"
+echo "{\"cmd_id\":\"$1\",\"gw_ac_id\":\"$2\",\"status\":true,\"info\":\"Set wireless success.\",\"data\":{\"ssid\":\"$ssid\",\"encryption\":\"$encryption\",\"key\":\"$key\",\"ssidHidden\":$hidden,\"disable\":$disable}}"
 
 

@@ -185,12 +185,11 @@ static void  main_loop(void)
         debug(LOG_DEBUG, "Get the GW Interface of:%s", config->gw_ac_interface);
     }
 
-    /* If we don't have the Gateway IP address, get it. Can't fail. */
+    /* If we don't have the Gateway IP address, get it. */
     if (!config->gw_ac_ip_address) {
         debug(LOG_DEBUG, "Finding IP address of: %s", config->gw_ac_interface);
         if ((config->gw_ac_ip_address = get_iface_ip(config->gw_ac_interface)) == NULL) {
-            debug(LOG_ERR, "Could not get IP address information of: %s, exiting...", config->gw_ac_ip_address);
-            exit(1);
+            debug(LOG_ERR, "Could not get IP address information of: %s ", config->gw_ac_ip_address);
         }
         debug(LOG_DEBUG, "%s = %s", config->gw_ac_ip_address, config->gw_ac_ip_address);
     }
@@ -240,7 +239,22 @@ static void  main_loop(void)
     pthread_mutex_t cond_mutex = PTHREAD_MUTEX_INITIALIZER;
     struct timespec timeout;
 
+    /* this is post settings to server */
+    char cmd[64] = {0};
+    sprintf(cmd, "%s 0 %s","accmd_getsettings", config->gw_ac_id);
+    if (excute_remote_shell_command(config->gw_ac_id, cmd) !=0 )
+    	debug(LOG_WARNING, "Warning: Failed to execute get settings command.");;
+
     while(1){
+
+        if (!config->gw_ac_ip_address) {
+            debug(LOG_DEBUG, "Finding IP address of: %s", config->gw_ac_interface);
+            if ((config->gw_ac_ip_address = get_iface_ip(config->gw_ac_interface)) == NULL) {
+                debug(LOG_ERR, "Could not get IP address information of: %s ", config->gw_ac_ip_address);
+            }
+            debug(LOG_DEBUG, "%s = %s", config->gw_ac_ip_address, config->gw_ac_ip_address);
+        }
+
 
     	cmdrets = getout_queue(&cmdrets_queue);
 

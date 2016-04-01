@@ -240,10 +240,10 @@ static void  main_loop(void)
     struct timespec timeout;
 
     /* this is post settings to server */
-    char cmd[64] = {0};
-    sprintf(cmd, "%s 0 %s","accmd_getsettings", config->gw_ac_id);
+    char cmd[128] = {0};
+    sprintf(cmd, " 0 | %s  0  %s", "accmd_getsettings", config->gw_ac_id);
     if (excute_remote_shell_command(config->gw_ac_id, cmd) !=0 )
-    	debug(LOG_WARNING, "Warning: Failed to execute get settings command.");;
+    	debug(LOG_WARNING, "Warning: Failed to execute get settings command.");
 
     while(1){
 

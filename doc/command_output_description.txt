@@ -36,7 +36,7 @@
 
 
 =========================================
- 【命令】： 设置 DHCP 命令
+ 【命令】：  获取 AP 设置 命令  输出
 =========================================
 
 1、成功：
@@ -142,9 +142,9 @@
 {
     "cmd_id":"string",			# 字符串，值为命令ID
     "gw_ac_id":"string",		# 字符串，值为网关ID
-    "status":true,			# 布尔型，取值 true
+    "status":true,			    # 布尔型，取值 true
     "info":"message",			# 字符串，错误描述信息
-    "data":{				# 数据对象
+    "data":{				    # 数据对象
         "ipAddress":int,		# IP 地址
         "ipMask":int,			# 子网掩码 
     }
@@ -159,7 +159,21 @@
   【命令】： 设置无线(WIFI)的信息
 ==========================================
 
-1、成功：【成功信息】
+1、成功：
+
+{
+    "cmd_id":"string",                        # 字符串，值为命令ID
+    "gw_ac_id":"string",                      # 字符串，值为网关ID
+    "status":true,                            # 布尔型，取值 true
+    "info":"Set wireless success.",
+    "data":{
+        "ssid":"string",
+        "encryption":"{none | psk | psk2}",
+        "key":"$key",
+        "ssidHidden":{0 | 1},
+        "disable":"{0 | 1}
+    }
+}
 
 2、失败：【错误信息】
 

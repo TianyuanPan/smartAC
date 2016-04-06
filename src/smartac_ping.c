@@ -147,6 +147,8 @@ static void  ping(void)
              json
          );
 
+    debug(LOG_INFO, "Ping data [ %s ]", json);
+
     /*
      * The ping thread does not really try to see if the auth server is actually
      * working. Merely that there is a web server listening at the port. And that

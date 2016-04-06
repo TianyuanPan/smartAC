@@ -68,6 +68,7 @@ void sigchld_handler(int s)
  */
 void termination_handler(int s)
 {
+	int ret;
     static pthread_mutex_t sigterm_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_t self = pthread_self();
 
@@ -81,6 +82,17 @@ void termination_handler(int s)
         debug(LOG_INFO, "Cleaning up and exiting");
     }
 
+    /*
+     * clear cmd result queue and traffic ipt chains.
+     * */
+    ret = destroy_queue(&cmdrets_queue);
+    debug(LOG_INFO, "destory result queue return code: %d", ret);
+    ret = update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]);
+    if (ret != 0)
+    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]) error!");
+    debug(LOG_INFO, "update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]) return code: %d", ret);
+
+
     /* XXX Hack
      * Aparently pthread_cond_timedwait under openwrt prevents signals (and therefore
      * termination handler) from happening so we need to explicitly kill the threads
@@ -89,12 +101,6 @@ void termination_handler(int s)
     if (tid_ping && self != tid_ping) {
         debug(LOG_INFO, "Explicitly killing the ping thread");
         pthread_kill(tid_ping, SIGKILL);
-    }
-
-    destroy_queue(&cmdrets_queue);
-
-    if (update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]) != 0){
-    	debug(LOG_ERR, "at main_loop, update_ac_information(opt_type[OPT_T_CHAIN_CLEAN_UP]) error!");
     }
 
     debug(LOG_NOTICE, "Exiting...");

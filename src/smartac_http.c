@@ -259,7 +259,7 @@ http_get(const int sockfd, const char *req)
         goto error;
     }
 
-    debug(LOG_DEBUG, "Sending HTTP request to AC server: [%s]\n", req);
+    debug(LOG_DEBUG, "Sending HTTP request to AC server: [ %s ]\n", req);
     numbytes = send(sockfd, req, reqlen, 0);
     if (numbytes <= 0) {
         debug(LOG_ERR, "send failed: %s", strerror(errno));
@@ -306,7 +306,7 @@ http_get(const int sockfd, const char *req)
 
     close(sockfd);
     retval = pstr_to_string(response);
-    debug(LOG_DEBUG, "HTTP Response from Server: [%s]", retval);
+    debug(LOG_INFO, "HTTP Response from Server: [ %s ]", retval);
     return retval;
 
  error:

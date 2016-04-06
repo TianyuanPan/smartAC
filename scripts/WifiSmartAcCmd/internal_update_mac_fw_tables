@@ -41,7 +41,7 @@ MAC_LIST="$5"
 
 
 
-. /usr/bin/accmd_common
+. /usr/bin/internal_common
 
 
 #################################
@@ -103,9 +103,10 @@ add_mac_to_black_rule()
       while read line
       do
          target=$(iptables -t mangle -nvx -L | grep "MAC $line MARK set 0x2")
+         ip=$(iptables -t mangle -nvx -L | grep "MAC AC:CF:85:5F:4D:BD MARK set 0x2"|awk '{print $8}')
          if [ -n "$target" ]
          then
-            iptables -t mangle -D $white_chain_name -m mac --mac-source $line -j MARK --set-mark 0x2
+            iptables -t mangle -D $white_chain_name -s $ip -m mac --mac-source $line -j MARK --set-mark 0x2
          fi
          target=$(iptables -t filter -nvx -L | grep "MAC $line" )
          if [ -z "$target" ]

@@ -64,10 +64,14 @@ int initial_queue(t_queue *queue)
 
 int destroy_queue(t_queue *queue)
 {
+	if (!queue)
+		return -1;
+
 	while (queue->front){
 		queue->rear = queue->front->next;
 
-		cmdresult_free(queue->front->data);
+		if (queue->front->data)
+			cmdresult_free(queue->front->data);
 
 		free(queue->front);
 		queue->front = queue->rear;

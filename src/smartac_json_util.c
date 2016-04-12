@@ -465,9 +465,9 @@ int  get_dog_json_info(char *json, const char *wdctl)
 int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list)
 {
 
-	char tmp[MAX_STRING_LEN] = {0},
-		 tmp2[MAX_STRING_LEN] = {0},
-		 tmpdog[MAX_STRING_LEN] = {0},
+	char tmp[MAX_STRING_LEN],
+		 tmp2[MAX_STRING_LEN],
+		 tmpdog[MAX_STRING_LEN],
 		 *ptr;
     int  cur_len;
 
@@ -477,6 +477,10 @@ int  build_ping_json_data(char *json, const char *gw_id, client_list *c_list)
     if (!json){
     	return -1;
     }
+
+    memset(tmp, 0, MAX_STRING_LEN);
+    memset(tmp2, 0, MAX_STRING_LEN);
+    memset(tmpdog, 0, MAX_STRING_LEN);
 
     sprintf(tmp, "{\"gw_id\":\"%s\",", gw_id);
 

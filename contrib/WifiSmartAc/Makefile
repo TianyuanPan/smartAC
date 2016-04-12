@@ -5,7 +5,7 @@
 #
 include $(TOPDIR)/rules.mk
 PKG_NAME:=WifiSmartAc
-PKG_VERSION:=0.0.1
+PKG_VERSION:=1.0.2
 PKG_RELEASE:=release-1
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:= @SF/$(PKG_NAME)

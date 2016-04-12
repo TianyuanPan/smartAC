@@ -10,16 +10,16 @@
 
 
 static char _version[][3] = {
+		{0x01},
 		{0x00},
-		{0x00},
-		{0x01}
+		{0x02}
 };
 
 static char version[32];
 
 static void _get_version()
 {
-     sprintf(version,"Ver %d.%d.%d", atoi(_version[0][0]),
+     sprintf(version,"Verion %d.%d.%d", atoi(_version[0][0]),
     		 atoi(_version[0][1]),
     		 atoi(_version[0][2]));
 }

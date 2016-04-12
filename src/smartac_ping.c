@@ -72,7 +72,7 @@ thread_ping(void *arg)
 static void  ping(void)
 {
     char request[MAX_BUF],
-         json[MAX_STRING_LEN] = {0},
+         json[MAX_STRING_LEN],
          *cmdptr;
     s_config *config = config_get_config();
 
@@ -118,6 +118,8 @@ static void  ping(void)
     }
 
     get_traffic_to_client(c_list, t_list);
+
+    memset(json, 0, MAX_STRING_LEN);
 
     if ( build_ping_json_data(json, config->gw_ac_id, c_list) != 0){
     	debug(LOG_ERR, "at ping(), build_ping_json_data error.");
